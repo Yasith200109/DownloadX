@@ -100,9 +100,7 @@ impl SpeedController {
         let rtt_congested = self.baseline_rtt_ms.is_some_and(|baseline| {
             baseline > 0 && sample.rtt_ms > baseline.saturating_mul(3) / 2
         });
-        let throughput_falling = self
-            .previous_throughput_bps
-            .is_some_and(|previous| {
+        let throughput_falling = self.previous_throughput_bps.is_some_and(|previous| {
                 previous > 0
                     && sample.throughput_bps.saturating_mul(100)
                         < previous.saturating_mul(85)
