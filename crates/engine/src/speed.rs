@@ -257,4 +257,48 @@ mod tests {
         controller.set_mode(SpeedMode::Maximum);
         assert_eq!(controller.observe(sample(4)), 4);
     }
+    #[test]
+    fn adaptive_ramp_never_exceeds_configured_or_host_ceiling() {
+        for mode in [SpeedMode::Auto, SpeedMode::Maximum, SpeedMode::Stable] {
+            let mut controller = SpeedController::new(mode);
+            let mut observation = sample(1);
+            observation.configured_max = 7;
+            observation.host_limit = Some(5);
+            for _ in 0..100 {
+                let target = controller.observe(observation);
+                assert!((1..=5).contains(&target));
+                observation.active_connections = target;
+            }
+        }
+    }
+
+    #[test]
+    fn zero_configured_limit_is_safely_clamped_to_one() {
+        let mut controller = SpeedController::new(SpeedMode::Maximum);
+        let mut observation = sample(1);
+        observation.configured_max = 0;
+        assert_eq!(controller.observe(observation), 1);
+    }
+
+    #[test]
+    fn zero_host_limit_is_ignored_as_unknown() {
+        let mut controller = SpeedController::new(SpeedMode::Maximum);
+        let mut observation = sample(3);
+        observation.host_limit = Some(0);
+        assert_eq!(controller.observe(observation), 3);
+    }
+
+    #[test]
+    fn rising_rtt_and_falling_throughput_reduce_parallelism() {
+        let mut controller = SpeedController::new(SpeedMode::Auto);
+        let baseline = sample(8);
+        for _ in 0..3 {
+            controller.observe(baseline);
+        }
+        let mut congested = sample(8);
+        congested.rtt_ms = 100;
+        congested.throughput_bps = 8_000_000;
+        assert_eq!(controller.observe(congested), 4);
+    }
+
 }
