@@ -347,10 +347,12 @@ mod tests {
         let mut controller = SpeedController::new(SpeedMode::Maximum);
         let mut observation = sample(8);
         observation.host_limit = Some(3);
+        observation.disk_backpressure = true;
         assert_eq!(controller.observe(observation), 3);
 
         observation.active_connections = 3;
         observation.host_limit = Some(6);
+        observation.disk_backpressure = false;
         // A newly raised host ceiling does not cause an instant jump; Maximum still
         // requires its normal healthy windows before adding another connection.
         assert_eq!(controller.observe(observation), 3);
