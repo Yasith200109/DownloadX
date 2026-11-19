@@ -294,12 +294,15 @@ mod tests {
         let mut controller = SpeedController::new(SpeedMode::Auto);
         let mut missing = sample(8);
         missing.rtt_ms = 0;
-        for _ in 0..3 {
-            assert_eq!(controller.observe(missing), 8);
-        }
+        assert_eq!(controller.observe(missing), 8);
+        assert_eq!(controller.observe(missing), 8);
+        // Throughput can still justify the normal ramp-up without a latency sample.
+        assert_eq!(controller.observe(missing), 9);
 
         // The first real measurement seeds the baseline instead of being compared with zero.
-        assert_eq!(controller.observe(sample(8)), 9);
+        let mut first_real = sample(9);
+        first_real.rtt_ms = 40;
+        assert_eq!(controller.observe(first_real), 9);
         let mut normal = sample(9);
         normal.rtt_ms = 45;
         assert_eq!(controller.observe(normal), 9);
