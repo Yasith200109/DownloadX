@@ -90,3 +90,16 @@ Record median throughput, p95 throughput, speed coefficient of variation, comple
 - Keep the existing installer AppId, mutex, registry keys, app-data directory and browser native-messaging identifiers during the first branding rollout. Existing installations and browser integrations depend on them.
 - Keep original upstream attribution and GPL-3.0-or-later notices.
 - Rename executable and release artifact filenames only in one coordinated change with the updater, installer, smoke tests, browser host manifests, CI and release workflows. A partial rename can make upgrades or browser integration fail.
+
+## Live-supervisor integration audit (2026-11-19)
+
+The first live integration must not be implemented as a simple comparison between worker IDs and a desired count.
+
+- `supervise()` currently launches workers into a Tokio `JoinSet` and assigns monotonically increasing `WorkerId` values.
+- A worker repeatedly asks the planner for its next assignment. Returning from a worker is currently tied to planner completion, range capability, retry exhaustion, or errors; there is no independent per-worker retirement signal.
+- The current cancellation token is shared by the whole download. Cancelling it to reduce parallelism would stop every worker, not just excess workers.
+- Worker IDs are identifiers for planner ownership and progress views, not reusable concurrency slots. A target-count check against `next_id` would therefore be incorrect after workers retire.
+- The planner already exposes active and receiving worker counts, while `ConnView` exposes per-worker speed and status. The supervisor still needs bounded request-latency / response-outcome telemetry before the policy can safely react to network congestion.
+- App settings are serialized with `#[serde(default)]`, and already persist the configured connection ceiling. A future mode preference can be added compatibly, but it should not be surfaced until the live engine actually consumes it.
+
+**Integration gate:** introduce an explicit worker-retirement mechanism that releases planner ownership safely, does not interrupt a blocking disk write, preserves retry and resume semantics, and is tested under pause/cancel/complete races. Only then connect controller targets to the supervisor. Until that gate is met, the controller remains a tested policy module and must not be advertised as active download behaviour.
