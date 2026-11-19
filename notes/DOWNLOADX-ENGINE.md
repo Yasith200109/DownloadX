@@ -121,7 +121,7 @@ The safe retirement point is the worker loop boundary after a complete segment, 
 - `Planner` now records cooperative retirement requests by `WorkerId` and only consumes a request after that worker no longer owns a segment.
 - `worker()` checks the request at the top of its assignment loop, after the previous segment's `Writer::wait` / `Planner::commit` path has completed or after a failed/preempted claim has been released. It then marks the connection finished and returns normally.
 - Planner tests cover a retirement request during a partially committed segment (it remains pending until the full segment is committed) and retirement after a failed segment is released.
-- This is the cooperative retirement primitive only. The supervisor does not yet issue target-based retirement requests, track live worker tasks for resizing, or respawn to a controller target. Request RTT/status telemetry is also not yet wired. The adaptive policy remains inactive.
+- At the time this primitive was added, the supervisor did not yet issue target-based retirement requests. The subsequent live integration is documented in the **Live controller integration** section below; it is still experimental pending full race tests and benchmarks.
 
 ### Telemetry still required for a live controller
 
@@ -159,4 +159,4 @@ The first live Auto-mode integration is now present in `crates/engine/src/downlo
 
 **Status:** the controller is connected to the live supervisor on the development branch, but it remains an experimental, unbenchmarked implementation pending integration/race tests, full CI, fuzzing and measured results.
 
-**Integration gate:** implement the protocol and telemetry above, then run the engine suite, app tests, Windows/macOS/Linux builds, fuzzing and the benchmark matrix. Until those checks pass, the controller remains a tested policy module and must not be advertised as active download behaviour.
+**Integration gate:** the protocol and first telemetry/controller path are now implemented on the development branch. Run the engine suite, app tests, Windows/macOS/Linux builds, fuzzing and the benchmark matrix; add the missing supervisor race/integration tests before considering the controller production-ready. Until those checks pass, treat the live Auto controller as experimental and do not claim a measured speed improvement.
