@@ -97,14 +97,12 @@ impl SpeedController {
         }
 
         let disk_or_limiter_limited = sample.disk_backpressure || sample.limiter_active;
-        let rtt_congested = self.baseline_rtt_ms.is_some_and(|baseline| {
-            baseline > 0 && sample.rtt_ms > baseline.saturating_mul(3) / 2
-        });
+        let rtt_congested = self
+            .baseline_rtt_ms
+            .is_some_and(|baseline| baseline > 0 && sample.rtt_ms > baseline.saturating_mul(3) / 2);
         let throughput_falling = self.previous_throughput_bps.is_some_and(|previous| {
-                previous > 0
-                    && sample.throughput_bps.saturating_mul(100)
-                        < previous.saturating_mul(85)
-            });
+            previous > 0 && sample.throughput_bps.saturating_mul(100) < previous.saturating_mul(85)
+        });
         let congested = sample.throttled
             || sample.request_errors >= 2
             || (!disk_or_limiter_limited && rtt_congested && throughput_falling);
@@ -146,8 +144,8 @@ impl SpeedController {
             SpeedMode::Stable => 6,
         };
         if self.healthy_windows >= ramp_interval {
-            let throughput_improved = previous_throughput
-                .is_none_or(|previous| sample.throughput_bps >= previous);
+            let throughput_improved =
+                previous_throughput.is_none_or(|previous| sample.throughput_bps >= previous);
             if self.mode != SpeedMode::Stable || throughput_improved {
                 self.healthy_windows = 0;
                 return current.saturating_add(1).min(ceiling);
