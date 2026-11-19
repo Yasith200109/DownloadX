@@ -9,7 +9,7 @@ authors.workspace = true
 publish.workspace = true
 
 [[bin]]
-name = "downloadx"
+name = "misterdownloadmanager"
 path = "src/main.rs"
 
 [features]
