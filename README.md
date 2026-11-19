@@ -9,7 +9,7 @@
 <p align="center">🌐 <a href="https://github.com/Yasith200109/DownloadX-Windows"><b>DownloadX on GitHub</b></a>: source code, releases, documentation and issue tracking</p>
 
 <p align="center">
-  🧩 <b>Browser extension:</b><br>
+  🧩 <b>Browser extension (existing upstream store listing; still branded Mister Download Manager):</b><br>
   <a href="https://addons.mozilla.org/firefox/addon/mister-download-manager/"><img src="https://img.shields.io/badge/Add%20to-Firefox-2a78d6?style=flat-square&logo=firefoxbrowser&logoColor=white" alt="Add to Firefox" height="34"></a>
   <a href="https://chromewebstore.google.com/detail/mister-download-manager/ejoleppdfgjdndddcjoehopknmlglojp"><img src="https://img.shields.io/badge/Add%20to-Chrome-2a78d6?style=flat-square&logo=googlechrome&logoColor=white" alt="Add to Chrome" height="34"></a><br>
   <sub>The Chrome Web Store's is for
@@ -30,7 +30,7 @@
 
 <table align="center">
   <tr>
-    <td align="center" width="210"><img src="docs/images/icons/faster.png" width="76" alt=""><h1>5×</h1><b>Faster</b><br><sub>a 1 GB file: 1 s instead of 5.5 s, on a local test server</sub></td>
+    <td align="center" width="210"><img src="docs/images/icons/faster.png" width="76" alt=""><h1>Multi</h1><b>Connection engine</b><br><sub>range-aware scheduling and dynamic segment planning</sub></td>
     <td align="center" width="210"><img src="docs/images/icons/languages.png" width="76" alt=""><h1>+46</h1><b>More languages</b><br><sub>86 instead of IDM's 40</sub></td>
     <td align="center" width="210"><img src="docs/images/icons/free.png" width="76" alt=""><h1>100%</h1><b>Cheaper (free!)</b><br><sub>no licence, no trial, ever</sub></td>
     <td align="center" width="210"><img src="docs/images/icons/torrent.png" width="76" alt=""><h1>Torrent</h1><b>Supported fully</b><br><sub>magnet links, .torrent files, seeding</sub></td>
