@@ -142,7 +142,7 @@ Before enabling the controller, cover: retirement while receiving a segment; ret
 The first live Auto-mode integration is now present in `crates/engine/src/download.rs`:
 
 - The supervisor wraps each `JoinSet` task with its monotonic `WorkerId` and tracks the live task IDs separately from the next ID counter.
-- Every three seconds, and only after a valid `206 Partial Content` confirms range support, it samples aggregate downloaded-byte deltas and a bounded request window.
+- Every three seconds, and only after a valid `206 Partial Content` confirms range support, it samples deltas from the monotonic network-received byte counter and a bounded request window.
 - HTTP/browser request telemetry records response-header latency (TTFB), transport errors, 429/503 throttling, 5xx responses and 408 timeouts. The latency sample queue is capped at 31 entries; each supervisor window drains its counters and calculates a median.
 - The observation also includes current disk-held state and active per-download/global/request speed limits. The controller is bounded by the current configured/file-size ceiling and a freshly queried learned host cap.
 - The supervisor requests retirement from newest non-probe workers first, cancels stale pending retirements when a newer window changes the target, and starts new workers with fresh IDs when the target rises.
@@ -151,11 +151,11 @@ The first live Auto-mode integration is now present in `crates/engine/src/downlo
 ### Current limitations and rollout gate
 
 - Only `Auto` is selected by the live supervisor. `Maximum` and `Stable` remain policy/test modes; no app setting or per-download selector exists yet.
-- The controller uses a per-download median request latency, not a per-worker RTT distribution. FTP's direct transfer path does not yet contribute request latency/status metrics.
+- The controller uses a per-download median response-header latency (TTFB), not a per-worker RTT distribution. This is a request-start-to-response-headers measurement, not a TCP RTT measurement. FTP's direct transfer path does not yet contribute request latency/status metrics.
 - The initial connection count still follows the existing configured/file-size policy; adaptive reduction and later recovery are active only after range support is confirmed.
-- There are not yet dedicated integration tests for supervisor target changes, worker respawn, pause/cancel races, or host-cap changes during a live transfer.
+- `crates/engine/tests/adaptive.rs` now runs a range-supported, rate-limited 32 MiB transfer beyond a supervisor sampling interval, pauses it, resumes it, and verifies the completed file byte-for-byte. This exercises supervisor/worker shutdown and resume while the live controller is active. It does not yet assert exact target changes, worker respawn, host-cap changes during a transfer, or a pause/cancel racing at the precise retirement boundary.
 - No reproducible before/after speed benchmark has been run on this integration. Do not claim a speed gain or make Auto the release default until the benchmark matrix and cross-platform checks pass.
-- The engine CI suite verifies planner retirement boundaries and controller policy, but does not by itself prove the end-to-end supervisor behaves correctly under real network and disk races.
+- The engine CI suite now combines deterministic controller/planner tests with one live-supervisor pause/resume integration case. Further targeted tests are still needed for exact target changes, worker respawn, host-cap updates and retirement-boundary races under network and disk contention.
 
 **Status:** the controller is connected to the live supervisor on the development branch, but it remains an experimental, unbenchmarked implementation pending integration/race tests, full CI, fuzzing and measured results.
 
