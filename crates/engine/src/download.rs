@@ -1528,6 +1528,89 @@ struct RequestWindow {
     throttled: bool,
 }
 
+impl RequestMetrics {
+    fn record(&mut self, elapsed: Duration, status: Option<StatusCode>, transport_error: bool) {
+        if status.is_some() {
+            if self.rtt_ms.len() == 31 {
+                self.rtt_ms.pop_front();
+            }
+            self.rtt_ms
+                .push_back(elapsed.as_millis().min(u128::from(u64::MAX)) as u64);
+        }
+        let throttled = status.is_some_and(|s| {
+            s == StatusCode::TOO_MANY_REQUESTS || s == StatusCode::SERVICE_UNAVAILABLE
+        });
+        let retryable_status =
+            status.is_some_and(|s| s.is_server_error() || s == StatusCode::REQUEST_TIMEOUT);
+        if transport_error || throttled || retryable_status {
+            self.errors = self.errors.saturating_add(1);
+        }
+        self.throttled |= throttled;
+    }
+
+    fn take_window(&mut self) -> RequestWindow {
+        let mut samples: Vec<_> = self.rtt_ms.drain(..).collect();
+        samples.sort_unstable();
+        let median_rtt_ms = samples.get(samples.len() / 2).copied().unwrap_or(0);
+        RequestWindow {
+            median_rtt_ms,
+            errors: std::mem::take(&mut self.errors),
+            throttled: std::mem::take(&mut self.throttled),
+        }
+    }
+}
+
+#[cfg(test)]
+mod request_metrics_tests {
+    use super::*;
+
+    #[test]
+    fn latency_samples_are_bounded_and_use_the_median() {
+        let mut metrics = RequestMetrics::default();
+        for millis in 1..=40 {
+            metrics.record(Duration::from_millis(millis), Some(StatusCode::OK), false);
+        }
+        assert_eq!(metrics.rtt_ms.len(), 31);
+        assert_eq!(metrics.take_window().median_rtt_ms, 25);
+        assert_eq!(metrics.take_window(), RequestWindow::default());
+    }
+
+    #[test]
+    fn throttling_server_errors_and_transport_failures_are_counted() {
+        let mut metrics = RequestMetrics::default();
+        metrics.record(
+            Duration::from_millis(10),
+            Some(StatusCode::TOO_MANY_REQUESTS),
+            false,
+        );
+        metrics.record(
+            Duration::from_millis(20),
+            Some(StatusCode::INTERNAL_SERVER_ERROR),
+            false,
+        );
+        metrics.record(Duration::from_millis(30), None, true);
+
+        let window = metrics.take_window();
+        assert_eq!(window.errors, 3);
+        assert!(window.throttled);
+        assert_eq!(window.median_rtt_ms, 20);
+        assert_eq!(metrics.take_window(), RequestWindow::default());
+    }
+
+    #[test]
+    fn request_timeout_is_counted_without_marking_the_server_throttled() {
+        let mut metrics = RequestMetrics::default();
+        metrics.record(
+            Duration::from_millis(50),
+            Some(StatusCode::REQUEST_TIMEOUT),
+            false,
+        );
+        let window = metrics.take_window();
+        assert_eq!(window.errors, 1);
+        assert!(!window.throttled);
+    }
+}
+
 struct Shared {
     view: Mutex<Snapshot>,
     request_metrics: Mutex<RequestMetrics>,
@@ -1639,37 +1722,15 @@ impl Shared {
 
     /// Record one request outcome. Only a small rolling set of response latencies is kept.
     fn note_request(&self, elapsed: Duration, status: Option<StatusCode>, transport_error: bool) {
-        let mut metrics = self.request_metrics.lock().unwrap();
-        if status.is_some() {
-            if metrics.rtt_ms.len() == 31 {
-                metrics.rtt_ms.pop_front();
-            }
-            metrics
-                .rtt_ms
-                .push_back(elapsed.as_millis().min(u128::from(u64::MAX)) as u64);
-        }
-        let throttled = status.is_some_and(|s| {
-            s == StatusCode::TOO_MANY_REQUESTS || s == StatusCode::SERVICE_UNAVAILABLE
-        });
-        let retryable_status =
-            status.is_some_and(|s| s.is_server_error() || s == StatusCode::REQUEST_TIMEOUT);
-        if transport_error || throttled || retryable_status {
-            metrics.errors = metrics.errors.saturating_add(1);
-        }
-        metrics.throttled |= throttled;
+        self.request_metrics
+            .lock()
+            .unwrap()
+            .record(elapsed, status, transport_error);
     }
 
     /// Take and reset the completed request-observation window.
     fn take_request_window(&self) -> RequestWindow {
-        let mut metrics = self.request_metrics.lock().unwrap();
-        let mut samples: Vec<_> = metrics.rtt_ms.drain(..).collect();
-        samples.sort_unstable();
-        let median_rtt_ms = samples.get(samples.len() / 2).copied().unwrap_or(0);
-        RequestWindow {
-            median_rtt_ms,
-            errors: std::mem::take(&mut metrics.errors),
-            throttled: std::mem::take(&mut metrics.throttled),
-        }
+        self.request_metrics.lock().unwrap().take_window()
     }
 
     fn with_planner<T>(&self, f: impl FnOnce(&mut Planner) -> T) -> T {
