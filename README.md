@@ -57,33 +57,24 @@
 | 🚀 [Download](#download) | ⚡ [Why switch](#why-switch-from-idm) | 🖼️ [Screenshots](#screenshots) | ✨ [Getting started](docs/getting-started.md) | 📜 [Help and tutorials](docs/README.md) |
 | --- | --- | --- | --- | --- |
 
-## Why switch from IDM?
+## Why DownloadX?
 
-**Same window you know. Your downloads finish sooner. And it costs nothing.**
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/races-dark.svg">
-    <img src="docs/images/races-light.svg" alt="Three races. A big 1 GB file: DownloadX 1 second, IDM 5.5 seconds, 5 times faster. A small file: instantly versus 3.1 seconds, over 100 times faster. A shaky connection: 1.6 seconds versus 5.4 seconds, 3 times faster." width="880">
-  </picture>
-</p>
+A familiar download-manager workflow with a multi-connection engine, browser integration and
+open-source licensing.
 
 <!-- compare:start -->
-| | DownloadX | IDM 6.42 |
+| | DownloadX | Internet Download Manager |
 | --- | --- | --- |
-| Download a big file (1 GB) | **1 second** | 5.5 seconds |
-| Download a small file | **instantly** | 3.1 seconds |
-| Download over a shaky connection | **1.6 seconds** | 5.4 seconds |
-| Wait before a download starts | **instantly** | 3.1 seconds |
-| Price | **Free, forever** | Paid, after a 30-day trial |
-| Ads, nag screens, sign-up | **None** | Registration needed |
-| Open source | **Yes** (GPL) | No |
+| License | **GPL-3.0-or-later** | Proprietary |
+| Source code | **Open source** | Closed source |
+| Ads and trial | **No ads, no trial** | Commercial product with a trial |
+| Browser integration | **Available** (existing upstream-branded extension) | Available |
 <!-- compare:end -->
 
-Nothing new to learn: the toolbar, the categories, the list of downloads, the progress window and
-the browser button are where you expect them. Measured on the same computer, downloading from a
-test server on that computer (a loopback test: it times the programs, not an internet connection),
-same files, both programs at their default settings ([how we measured](#the-benchmark-in-detail)).
+The interface keeps the familiar download list, categories, queue controls and progress window.
+Performance comparisons are intentionally withheld until fresh benchmarks have been run against
+a DownloadX build; the inherited upstream results are documented as historical in
+[the benchmark section](#the-benchmark-in-detail).
 
 ## Release status
 
