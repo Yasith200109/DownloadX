@@ -8,7 +8,7 @@
 //! reused between segments, TLS sessions resumed) with at most `connections()` requests at a
 //! time, since each worker has one request in flight.
 
-use std::collections::HashSet;
+use std::collections::{HashSet, VecDeque};
 use std::fs::File;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -1401,6 +1401,7 @@ impl Download {
                 finishing: None,
             }),
             seen: Default::default(),
+            request_metrics: Default::default(),
             planner: Mutex::new(None),
             limiter: Limiter::new(None),
             best_speed: Default::default(),
@@ -1511,8 +1512,24 @@ pub async fn fetch(
     dl.wait().await
 }
 
+#[derive(Default)]
+struct RequestMetrics {
+    /// Recent response latencies, bounded so concurrent downloads cannot grow this unbounded.
+    rtt_ms: VecDeque<u64>,
+    errors: u32,
+    throttled: bool,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+struct RequestWindow {
+    median_rtt_ms: u64,
+    errors: u32,
+    throttled: bool,
+}
+
 struct Shared {
     view: Mutex<Snapshot>,
+    request_metrics: Mutex<RequestMetrics>,
     /// What the download's client learnt of its server (#140); the look's when it went on
     /// from the look's answer.
     seen: std::sync::OnceLock<Arc<crate::server::ServerSeen>>,
@@ -1617,6 +1634,38 @@ impl Shared {
             }
         };
         f(&mut v.connections[i]);
+    }
+
+    /// Record one request outcome. Only a small rolling set of response latencies is kept.
+    fn note_request(&self, elapsed: Duration, status: Option<StatusCode>, transport_error: bool) {
+        let mut metrics = self.request_metrics.lock().unwrap();
+        if status.is_some() {
+            if metrics.rtt_ms.len() == 31 {
+                metrics.rtt_ms.pop_front();
+            }
+            metrics.rtt_ms.push_back(elapsed.as_millis().min(u128::from(u64::MAX)) as u64);
+        }
+        let throttled = status.is_some_and(|s| {
+            s == StatusCode::TOO_MANY_REQUESTS || s == StatusCode::SERVICE_UNAVAILABLE
+        });
+        let retryable_status = status.is_some_and(|s| s.is_server_error() || s == StatusCode::REQUEST_TIMEOUT);
+        if transport_error || throttled || retryable_status {
+            metrics.errors = metrics.errors.saturating_add(1);
+        }
+        metrics.throttled |= throttled;
+    }
+
+    /// Take and reset the completed request-observation window.
+    fn take_request_window(&self) -> RequestWindow {
+        let mut metrics = self.request_metrics.lock().unwrap();
+        let mut samples: Vec<_> = metrics.rtt_ms.drain(..).collect();
+        samples.sort_unstable();
+        let median_rtt_ms = samples.get(samples.len() / 2).copied().unwrap_or(0);
+        RequestWindow {
+            median_rtt_ms,
+            errors: std::mem::take(&mut metrics.errors),
+            throttled: std::mem::take(&mut metrics.throttled),
+        }
     }
 
     fn with_planner<T>(&self, f: impl FnOnce(&mut Planner) -> T) -> T {
@@ -4424,7 +4473,8 @@ async fn request(ctx: &Ctx, target: &Target, from: u64, to: u64) -> Result<Body,
         .if_range(target.url.host_str())
         .and_then(|v| HeaderValue::from_str(v).ok());
     let range = format!("bytes={from}-{}", to - 1);
-    let (head, body) = match &ctx.browser {
+    let request_started = std::time::Instant::now();
+    let response = match &ctx.browser {
         // The browser-like connection's own (#668): its redirects followed as `get` does.
         Some(b) => {
             let mut headers = target.headers.clone();
@@ -4432,10 +4482,9 @@ async fn request(ctx: &Ctx, target: &Target, from: u64, to: u64) -> Result<Body,
             if let Some(v) = &if_range {
                 headers.insert(header::IF_RANGE, v.clone());
             }
-            let (head, body, _) = b
-                .get(target.url.clone(), headers, true, &ctx.cancel)
-                .await?;
-            (head, body)
+            b.get(target.url.clone(), headers, true, &ctx.cancel)
+                .await
+                .map(|(head, body, _)| (head, body))
         }
         None => {
             let mut req = build(
@@ -4449,9 +4498,22 @@ async fn request(ctx: &Ctx, target: &Target, from: u64, to: u64) -> Result<Body,
             if let Some(v) = &if_range {
                 req = req.header(header::IF_RANGE, v);
             }
-            let resp = cancellable(&ctx.cancel, async { Ok(req.send().await?) }).await?;
-            (Head::of(&resp), Body::Http(resp))
+            match cancellable(&ctx.cancel, async { Ok(req.send().await?) }).await {
+                Ok(resp) => Ok((Head::of(&resp), Body::Http(resp))),
+                Err(e) => Err(e),
+            }
         }
+    };
+    let (head, body) = match response {
+        Ok((head, body)) => {
+            ctx.shared.note_request(request_started.elapsed(), Some(head.status), false);
+            (head, body)
+        }
+        Err(e) => {
+            ctx.shared.note_request(request_started.elapsed(), None, true);
+            return Err(e);
+        }
+    };
     };
     // A resumed download asks nothing before its connections: the first one's answer is the
     // first it gets (#954).
