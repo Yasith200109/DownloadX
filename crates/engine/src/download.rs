@@ -4234,10 +4234,7 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
 
     loop {
         let joined = tokio::select! {
-            joined = set.join_next() => match joined {
-                Some(joined) => Some(joined),
-                None => None,
-            },
+            joined = set.join_next() => joined,
             () = ctx.range_answered.notified(), if held => {
                 held = false;
                 if ctx.browser.is_some() && next_id < max {
