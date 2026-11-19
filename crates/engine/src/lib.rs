@@ -19,8 +19,8 @@ pub mod server;
 pub mod sites;
 #[doc(hidden)]
 pub mod slowdisk;
-pub mod speed;
 mod sparse;
+pub mod speed;
 pub mod state;
 pub mod tls;
 pub mod unlock;
