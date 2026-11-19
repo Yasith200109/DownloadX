@@ -198,6 +198,17 @@ fn retirement_waits_until_the_current_segment_is_committed() {
 }
 
 #[test]
+fn a_recovered_target_can_cancel_a_pending_retirement() {
+    let mut p = Planner::new(8 * MB, MB);
+    p.assign(6, None).unwrap();
+    p.request_retirement(6);
+    p.cancel_retirement(6);
+    assert!(!p.take_retirement(6));
+    assert!(p.holds(6), "the worker keeps its current segment");
+    check_invariants(&p);
+}
+
+#[test]
 fn retirement_can_be_consumed_after_a_worker_releases_a_failed_segment() {
     let mut p = Planner::new(8 * MB, MB);
     p.assign(4, None).unwrap();
