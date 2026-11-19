@@ -30,7 +30,7 @@ env:
 
 jobs:
   engine-policy:
-    name: DownloadX speed policy tests
+    name: DownloadX engine test suite
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -49,5 +49,5 @@ jobs:
           restore-keys: ubuntu-downloadx-engine-
       - name: Format
         run: cargo fmt --all --check
-      - name: Adaptive speed policy tests
-        run: cargo test -p mdm-engine --lib speed::tests
+      - name: Complete engine unit tests
+        run: cargo test -p mdm-engine --lib
