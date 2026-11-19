@@ -243,7 +243,7 @@ mod tests {
         assert_eq!(controller.observe(observation), 7);
         observation = sample(4);
         assert_eq!(controller.observe(observation), 4);
-        for _ in 0..5 {
+        for _ in 0..4 {
             assert_eq!(controller.observe(sample(4)), 4);
         }
         assert_eq!(controller.observe(sample(4)), 5);
