@@ -33,6 +33,7 @@ use crate::planner::{Claim, Planner, WorkerId};
 use crate::sites::{self, PageSays, Refusal};
 use crate::sparse;
 use crate::state::{ResumeState, Validators, state_path};
+use crate::speed::{SpeedController, SpeedMode, SpeedObservation};
 
 /// Bytes buffered per connection before claiming and writing them. Each batch is one buffer of
 /// exactly this capacity, filled and never grown (`Writer::push`): what a connection holds in
@@ -4108,14 +4109,17 @@ where
 /// Run connections until the planner is complete. Respawns a connection when work is left
 /// and none is running (e.g. the others retired).
 async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
-    let mut set = JoinSet::new();
+    let mut set: JoinSet<(WorkerId, Result<(), Error>)> = JoinSet::new();
+    let mut live = HashSet::new();
     let mut next_id: WorkerId = 0;
     let probing = first.is_some();
     if let Some(body) = first {
         // The probe's body is byte 0 onward: reserve that segment for connection 0 before any
         // other connection can split or take it.
         ctx.shared.with_planner(|p| p.assign(0, None));
-        set.spawn(worker(ctx.clone(), 0, Some(body)));
+        let task_ctx = ctx.clone();
+        set.spawn(async move { (0, worker(task_ctx, 0, Some(body)).await) });
+        live.insert(0);
         next_id = 1;
     }
     // No more connections than the host is known to allow.
@@ -4146,15 +4150,29 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
         1
     };
     while next_id < if held { scouts.min(max) } else { max } {
-        set.spawn(worker(ctx.clone(), next_id, None));
+        let id = next_id;
         next_id += 1;
+        let task_ctx = ctx.clone();
+        set.spawn(async move { (id, worker(task_ctx, id, None).await) });
+        live.insert(id);
     }
+
     let mut last_err = None;
+    let mut desired = max;
+    let mut controller = SpeedController::new(SpeedMode::Auto);
+    let mut last_sample_at = std::time::Instant::now();
+    let mut last_downloaded = ctx.shared.snapshot().downloaded;
+    let mut sample_tick = tokio::time::interval_at(
+        tokio::time::Instant::now() + Duration::from_secs(3),
+        Duration::from_secs(3),
+    );
+    sample_tick.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+
     loop {
         let joined = tokio::select! {
             joined = set.join_next() => match joined {
-                Some(joined) => joined,
-                None => break,
+                Some(joined) => Some(joined),
+                None => None,
             },
             () = ctx.range_answered.notified(), if held => {
                 held = false;
@@ -4164,13 +4182,77 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
                     ));
                 }
                 while next_id < max {
-                    set.spawn(worker(ctx.clone(), next_id, None));
+                    let id = next_id;
                     next_id += 1;
+                    let task_ctx = ctx.clone();
+                    set.spawn(async move { (id, worker(task_ctx, id, None).await) });
+                    live.insert(id);
+                }
+                continue;
+            }
+            _ = sample_tick.tick(), if !held => {
+                // Unknown range support is not the same as a server refusing ranges. Keep the
+                // existing probe/scout behaviour until a valid 206 confirms parallel ranges.
+                if ctx.ranges.load(Ordering::SeqCst) == RANGES_YES {
+                    let now = std::time::Instant::now();
+                    let elapsed = now.saturating_duration_since(last_sample_at);
+                    let snapshot = ctx.shared.snapshot();
+                    let received = snapshot.downloaded.saturating_sub(last_downloaded);
+                    let window = ctx.shared.take_request_window();
+                    let disk_backpressure = ctx
+                        .shared
+                        .disk_held
+                        .lock()
+                        .unwrap()
+                        .is_some_and(|at| at.elapsed() < LINK_WINDOW);
+                    let limiter_active = ctx.shared.limiter.get().is_some()
+                        || ctx.opts.global.as_ref().is_some_and(|g| g.get().is_some())
+                        || ctx.opts.cap().is_some();
+                    let observation = SpeedObservation {
+                        active_connections: live.len() as u32,
+                        configured_max: max,
+                        host_limit: learned,
+                        ranges_supported: true,
+                        throughput_bps: rate(received, elapsed),
+                        rtt_ms: window.median_rtt_ms,
+                        request_errors: window.errors,
+                        throttled: window.throttled,
+                        disk_backpressure,
+                        limiter_active,
+                    };
+                    let target = controller.observe(observation).clamp(1, max);
+                    desired = target;
+
+                    if target < live.len() as u32 {
+                        let mut candidates: Vec<_> =
+                            live.iter().copied().filter(|id| *id != 0).collect();
+                        candidates.sort_unstable_by(|a, b| b.cmp(a));
+                        let retire_count = live.len().saturating_sub(target as usize);
+                        for id in candidates.into_iter().take(retire_count) {
+                            ctx.shared.with_planner(|p| p.request_retirement(id));
+                        }
+                    } else {
+                        while live.len() < target as usize {
+                            let id = next_id;
+                            next_id += 1;
+                            let task_ctx = ctx.clone();
+                            set.spawn(async move { (id, worker(task_ctx, id, None).await) });
+                            live.insert(id);
+                        }
+                    }
+                    last_sample_at = now;
+                    last_downloaded = snapshot.downloaded;
                 }
                 continue;
             }
         };
-        match joined.expect("worker panicked") {
+
+        let Some(joined) = joined else {
+            break;
+        };
+        let (id, result) = joined.expect("worker panicked");
+        live.remove(&id);
+        match result {
             Err(e) if e.is_fatal() => {
                 stop_connections(&ctx, &mut set).await;
                 return Err(e);
@@ -4190,8 +4272,16 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
             if let Some(e) = last_err.take() {
                 return Err(e); // the last connection exhausted its retries
             }
-            set.spawn(worker(ctx.clone(), next_id, None));
-            next_id += 1;
+            // All workers may have retired after finishing their segments. Recreate only the
+            // current target, with fresh monotonically increasing IDs.
+            let count = desired.max(1).min(max);
+            while live.len() < count as usize {
+                let id = next_id;
+                next_id += 1;
+                let task_ctx = ctx.clone();
+                set.spawn(async move { (id, worker(task_ctx, id, None).await) });
+                live.insert(id);
+            }
         }
     }
     Ok(())
@@ -4204,7 +4294,7 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
 /// still taken (#201: a connection taken over in its overlap check, on a busy machine), and a
 /// stopped one went on writing after it had returned. Every wait of a connection ends on its
 /// token, and a blocking call only takes as long as one read or write.
-async fn stop_connections(ctx: &Ctx, set: &mut JoinSet<Result<(), Error>>) {
+async fn stop_connections(ctx: &Ctx, set: &mut JoinSet<(WorkerId, Result<(), Error>)>) {
     ctx.cancel.cancel();
     while set.join_next().await.is_some() {}
 }
@@ -4510,7 +4600,9 @@ async fn request(ctx: &Ctx, target: &Target, from: u64, to: u64) -> Result<Body,
             (head, body)
         }
         Err(e) => {
-            ctx.shared.note_request(request_started.elapsed(), None, true);
+            let cancelled = matches!(&e, Error::Cancelled);
+            ctx.shared
+                .note_request(request_started.elapsed(), None, !cancelled);
             return Err(e);
         }
     };
