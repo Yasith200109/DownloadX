@@ -32,7 +32,7 @@ pub struct SpeedObservation {
     pub ranges_supported: bool,
     /// Aggregate bytes received per second in this window.
     pub throughput_bps: u64,
-    /// Median request round-trip time in milliseconds for this window.
+    /// Median response-header latency (time to first byte, TTFB) in milliseconds for this window.
     pub rtt_ms: u64,
     /// Number of failed or retried requests in this window.
     pub request_errors: u32,
@@ -320,4 +320,41 @@ mod tests {
         congested.throughput_bps = 8_000_000;
         assert_eq!(controller.observe(congested), 4);
     }
+
+    #[test]
+    fn disk_and_limiter_windows_do_not_count_toward_ramp_up() {
+        let mut controller = SpeedController::new(SpeedMode::Auto);
+        let mut disk_limited = sample(4);
+        disk_limited.disk_backpressure = true;
+        for _ in 0..4 {
+            assert_eq!(controller.observe(disk_limited), 4);
+        }
+
+        let mut limited = sample(4);
+        limited.limiter_active = true;
+        for _ in 0..4 {
+            assert_eq!(controller.observe(limited), 4);
+        }
+
+        // Only fresh, unconstrained windows count toward the three-window ramp.
+        assert_eq!(controller.observe(sample(4)), 4);
+        assert_eq!(controller.observe(sample(4)), 4);
+        assert_eq!(controller.observe(sample(4)), 5);
+    }
+
+    #[test]
+    fn a_host_limit_change_is_applied_on_the_next_observation() {
+        let mut controller = SpeedController::new(SpeedMode::Maximum);
+        let mut observation = sample(8);
+        observation.host_limit = Some(3);
+        assert_eq!(controller.observe(observation), 3);
+
+        observation.active_connections = 3;
+        observation.host_limit = Some(6);
+        // A newly raised host ceiling does not cause an instant jump; Maximum still
+        // requires its normal healthy windows before adding another connection.
+        assert_eq!(controller.observe(observation), 3);
+        assert_eq!(controller.observe(observation), 4);
+    }
+
 }
