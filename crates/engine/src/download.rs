@@ -32,8 +32,8 @@ use crate::net;
 use crate::planner::{Claim, Planner, WorkerId};
 use crate::sites::{self, PageSays, Refusal};
 use crate::sparse;
-use crate::state::{ResumeState, Validators, state_path};
 use crate::speed::{SpeedController, SpeedMode, SpeedObservation};
+use crate::state::{ResumeState, Validators, state_path};
 
 /// Bytes buffered per connection before claiming and writing them. Each batch is one buffer of
 /// exactly this capacity, filled and never grown (`Writer::push`): what a connection holds in
@@ -1644,12 +1644,15 @@ impl Shared {
             if metrics.rtt_ms.len() == 31 {
                 metrics.rtt_ms.pop_front();
             }
-            metrics.rtt_ms.push_back(elapsed.as_millis().min(u128::from(u64::MAX)) as u64);
+            metrics
+                .rtt_ms
+                .push_back(elapsed.as_millis().min(u128::from(u64::MAX)) as u64);
         }
         let throttled = status.is_some_and(|s| {
             s == StatusCode::TOO_MANY_REQUESTS || s == StatusCode::SERVICE_UNAVAILABLE
         });
-        let retryable_status = status.is_some_and(|s| s.is_server_error() || s == StatusCode::REQUEST_TIMEOUT);
+        let retryable_status =
+            status.is_some_and(|s| s.is_server_error() || s == StatusCode::REQUEST_TIMEOUT);
         if transport_error || throttled || retryable_status {
             metrics.errors = metrics.errors.saturating_add(1);
         }
@@ -4596,7 +4599,8 @@ async fn request(ctx: &Ctx, target: &Target, from: u64, to: u64) -> Result<Body,
     };
     let (head, body) = match response {
         Ok((head, body)) => {
-            ctx.shared.note_request(request_started.elapsed(), Some(head.status), false);
+            ctx.shared
+                .note_request(request_started.elapsed(), Some(head.status), false);
             (head, body)
         }
         Err(e) => {
