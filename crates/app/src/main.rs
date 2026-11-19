@@ -486,7 +486,7 @@ fn app() -> eframe::Result {
     if let Some(data) = mdm_ipc::data_dir() {
         mdm_crash::logs::init(&data, mdm_crash::logs::APP);
         tracing::info!(
-            "Mister Download Manager {} ({}) starting",
+            "DownloadX {} ({}) starting",
             help::VERSION,
             help::COMMIT
         );
