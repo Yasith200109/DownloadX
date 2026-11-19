@@ -4209,8 +4209,7 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
                         .unwrap()
                         .is_some_and(|at| at.elapsed() < LINK_WINDOW);
                     let limiter_active = ctx.shared.limiter.get().is_some()
-                        || ctx.opts.global.as_ref().is_some_and(|g| g.get().is_some())
-                        || ctx.opts.cap().is_some();
+                        || ctx.opts.global.as_ref().is_some_and(|g| g.get().is_some());
                     let current_host_limit =
                         ctx.opts.host_limits.as_ref().and_then(|h| h.cap(&host));
                     let current_max = current_host_limit
@@ -4265,6 +4264,9 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
         };
         let (id, result) = joined.expect("worker panicked");
         live.remove(&id);
+        // A worker may have consumed its retirement request just before its JoinSet result is
+        // observed; clear any stale request before dropping its live-task entry.
+        ctx.shared.with_planner(|p| p.cancel_retirement(id));
         match result {
             Err(e) if e.is_fatal() => {
                 stop_connections(&ctx, &mut set).await;
