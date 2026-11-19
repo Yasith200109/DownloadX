@@ -4211,10 +4211,16 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
                     let limiter_active = ctx.shared.limiter.get().is_some()
                         || ctx.opts.global.as_ref().is_some_and(|g| g.get().is_some())
                         || ctx.opts.cap().is_some();
+                    let current_host_limit =
+                        ctx.opts.host_limits.as_ref().and_then(|h| h.cap(&host));
+                    let current_max = current_host_limit
+                        .map_or(wanted, |cap| wanted.min(cap))
+                        .min(by_size.max(1))
+                        .max(1);
                     let observation = SpeedObservation {
                         active_connections: live.len() as u32,
-                        configured_max: max,
-                        host_limit: learned,
+                        configured_max: current_max,
+                        host_limit: current_host_limit,
                         ranges_supported: true,
                         throughput_bps: rate(received, elapsed),
                         rtt_ms: window.median_rtt_ms,
@@ -4223,25 +4229,29 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
                         disk_backpressure,
                         limiter_active,
                     };
-                    let target = controller.observe(observation).clamp(1, max);
+                    let target = controller.observe(observation).clamp(1, current_max);
                     desired = target;
 
-                    if target < live.len() as u32 {
-                        let mut candidates: Vec<_> =
-                            live.iter().copied().filter(|id| *id != 0).collect();
-                        candidates.sort_unstable_by(|a, b| b.cmp(a));
-                        let retire_count = live.len().saturating_sub(target as usize);
+                    let mut candidates: Vec<_> =
+                        live.iter().copied().filter(|id| *id != 0).collect();
+                    candidates.sort_unstable_by(|a, b| b.cmp(a));
+                    let retire_count = live.len().saturating_sub(target as usize);
+                    ctx.shared.with_planner(|p| {
+                        // Replace the previous window's retirement decisions atomically. A
+                        // recovered target must be able to cancel requests not yet consumed.
+                        for id in &live {
+                            p.cancel_retirement(*id);
+                        }
                         for id in candidates.into_iter().take(retire_count) {
-                            ctx.shared.with_planner(|p| p.request_retirement(id));
+                            p.request_retirement(id);
                         }
-                    } else {
-                        while live.len() < target as usize {
-                            let id = next_id;
-                            next_id += 1;
-                            let task_ctx = ctx.clone();
-                            set.spawn(async move { (id, worker(task_ctx, id, None).await) });
-                            live.insert(id);
-                        }
+                    });
+                    while live.len() < target as usize {
+                        let id = next_id;
+                        next_id += 1;
+                        let task_ctx = ctx.clone();
+                        set.spawn(async move { (id, worker(task_ctx, id, None).await) });
+                        live.insert(id);
                     }
                     last_sample_at = now;
                     last_downloaded = snapshot.downloaded;
