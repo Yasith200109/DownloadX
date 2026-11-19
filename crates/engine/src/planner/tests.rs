@@ -175,14 +175,23 @@ fn retirement_waits_until_the_current_segment_is_committed() {
     p.assign(3, None).unwrap();
     p.request_retirement(3);
 
-    assert!(!p.take_retirement(3), "an active segment must never be abandoned");
+    assert!(
+        !p.take_retirement(3),
+        "an active segment must never be abandoned"
+    );
     assert_eq!(p.claim(3, 0, 2 * MB), Claim::Granted(2 * MB));
     assert_eq!(p.commit(3, 2 * MB), None);
-    assert!(!p.take_retirement(3), "partially committed segment is still owned");
+    assert!(
+        !p.take_retirement(3),
+        "partially committed segment is still owned"
+    );
 
     assert_eq!(p.claim(3, 2 * MB, 6 * MB), Claim::Granted(6 * MB));
     assert_eq!(p.commit(3, 8 * MB), Some(8 * MB));
-    assert!(p.take_retirement(3), "completed segment releases the worker");
+    assert!(
+        p.take_retirement(3),
+        "completed segment releases the worker"
+    );
     assert!(!p.take_retirement(3), "retirement request is consumed once");
     assert!(p.is_complete());
     check_invariants(&p);
