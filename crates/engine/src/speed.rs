@@ -257,6 +257,7 @@ mod tests {
         controller.set_mode(SpeedMode::Maximum);
         assert_eq!(controller.observe(sample(4)), 4);
     }
+
     #[test]
     fn adaptive_ramp_never_exceeds_configured_or_host_ceiling() {
         for mode in [SpeedMode::Auto, SpeedMode::Maximum, SpeedMode::Stable] {
@@ -300,5 +301,4 @@ mod tests {
         congested.throughput_bps = 8_000_000;
         assert_eq!(controller.observe(congested), 4);
     }
-
 }
