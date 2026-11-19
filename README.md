@@ -6,7 +6,7 @@
 
 <h3 align="center">Fast, flexible downloads. Free and open source.</h3>
 
-<p align="center">🌐 <a href="https://github.com/Yasith200109/DownloadX-Windows"><b>github.com/Yasith200109/DownloadX-Windows</b></a>: the official website, with the downloads, help and news</p>
+<p align="center">🌐 <a href="https://github.com/Yasith200109/DownloadX-Windows"><b>DownloadX on GitHub</b></a>: source code, releases, documentation and issue tracking</p>
 
 <p align="center">
   <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Windows-2a78d6?style=flat-square&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yIDMuNWw4LjUtMS4ydjguMkgyek0xMS41IDIuMkwyMiAuOHY5LjdIMTEuNXpNMiAxMS41aDguNXY4LjJMMiAxOC41ek0xMS41IDExLjVIMjJ2OS43bC0xMC41LTEuNHoiLz48L3N2Zz4%3D" alt="Download for Windows" height="34"></a>
@@ -118,19 +118,18 @@ copy on its own processor's files.
 > Windows may say *"Windows protected your PC"* the first time, because this early version isn't
 > code-signed yet. Click **More info**, then **Run anyway**.
 
-Or with [WinGet](https://learn.microsoft.com/windows/package-manager/winget/), Windows' package
-manager: in a terminal, the first line installs DownloadX and the second updates it.
+### WinGet
 
-```
-winget install AhmedNefzaoui.MisterDownloadManager
-winget upgrade AhmedNefzaoui.MisterDownloadManager
-```
+The existing WinGet ID, `AhmedNefzaoui.MisterDownloadManager`, belongs to the upstream
+Mister Download Manager project; it is **not a DownloadX package**. Do not use that ID to install
+or update DownloadX. A new package ID and verified install instructions will be added after the
+DownloadX manifest is published.
 
-### Code signing policy
+### Code signing
 
-Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
-Which Windows files are signed, who reviews and approves them, and what DownloadX sends over the
-network: [code signing policy](https://github.com/Yasith200109/DownloadX-Windows/code-signing-policy.html).
+DownloadX Windows builds are not currently code-signed. Windows may show *"Windows protected your PC"*
+when you first run an installer; verify that the installer came from this repository's Releases page
+before choosing to run it.
 
 ### On Linux
 
@@ -432,7 +431,7 @@ pieces fit.
 | `python tools/shots/make.py` | The help pages' pictures, from one list (`tools/shots/shots.toml`): shot, cropped, annotated, lossless WebP; `make.py check` keeps them in step |
 | `tools/lab/wsl/` | A WSL2 machine that builds DownloadX for Linux in minutes and shoots its windows on a virtual screen ([README](tools/lab/wsl/README.md)) |
 | `tools\lab\progress-shots.ps1` | The progress window of a video (yt-dlp) and of a torrent, from a swarm on this computer (`cargo run -p mdm-torrent --example swarm`) |
-| `python tools/website/build.py --serve` | github.com/Yasith200109/DownloadX-Windows into `target/site` (help pages from `docs/`, news from the CHANGELOG, FAQ and legal pages from `website/content/`), served on http://127.0.0.1:8765; GitHub Pages publishes it (`pages.yml`) |
+| `python tools/website/build.py --serve` | Builds the DownloadX documentation and project site into `target/site` (help pages from `docs/`, news from the CHANGELOG, FAQ and legal pages from `website/content/`), served on http://127.0.0.1:8765; the `pages.yml` workflow handles GitHub Pages publishing |
 | `python tools/readme/social.py` | The repository's social preview card (`docs/images/social-preview.png`) |
 | `MDM_FIT_AUDIT=<file>` | Lists every text that doesn't fit its window or runs over another, for checking a translation |
 | `MDM_OFFSCREEN=1` | Opens every window off the screen, without focus, tray icon or sound (screenshots and checks) |
