@@ -135,4 +135,28 @@ The safe retirement point is the worker loop boundary after a complete segment, 
 
 Before enabling the controller, cover: retirement while receiving a segment; retirement while a disk write is pending; retirement after a preempted claim; retry then retirement; pause/cancel racing with retirement; final segment completion racing with target reduction; worker respawn after a prior worker exits; no-range probe preservation; resume-state byte continuity; and a many-worker randomized planner test proving every byte is committed at most once.
 
+
+
+### Live controller integration (2026-11-19)
+
+The first live Auto-mode integration is now present in `crates/engine/src/download.rs`:
+
+- The supervisor wraps each `JoinSet` task with its monotonic `WorkerId` and tracks the live task IDs separately from the next ID counter.
+- Every three seconds, and only after a valid `206 Partial Content` confirms range support, it samples aggregate downloaded-byte deltas and a bounded request window.
+- HTTP/browser request telemetry records response-header latency (TTFB), transport errors, 429/503 throttling, 5xx responses and 408 timeouts. The latency sample queue is capped at 31 entries; each supervisor window drains its counters and calculates a median.
+- The observation also includes current disk-held state and active per-download/global/request speed limits. The controller is bounded by the current configured/file-size ceiling and a freshly queried learned host cap.
+- The supervisor requests retirement from newest non-probe workers first, cancels stale pending retirements when a newer window changes the target, and starts new workers with fresh IDs when the target rises.
+- Worker tasks return their IDs with their results so the supervisor removes the exact completed task from its live registry.
+
+### Current limitations and rollout gate
+
+- Only `Auto` is selected by the live supervisor. `Maximum` and `Stable` remain policy/test modes; no app setting or per-download selector exists yet.
+- The controller uses a per-download median request latency, not a per-worker RTT distribution. FTP's direct transfer path does not yet contribute request latency/status metrics.
+- The initial connection count still follows the existing configured/file-size policy; adaptive reduction and later recovery are active only after range support is confirmed.
+- There are not yet dedicated integration tests for supervisor target changes, worker respawn, pause/cancel races, or host-cap changes during a live transfer.
+- No reproducible before/after speed benchmark has been run on this integration. Do not claim a speed gain or make Auto the release default until the benchmark matrix and cross-platform checks pass.
+- The engine CI suite verifies planner retirement boundaries and controller policy, but does not by itself prove the end-to-end supervisor behaves correctly under real network and disk races.
+
+**Status:** the controller is connected to the live supervisor on the development branch, but it remains an experimental, unbenchmarked implementation pending integration/race tests, full CI, fuzzing and measured results.
+
 **Integration gate:** implement the protocol and telemetry above, then run the engine suite, app tests, Windows/macOS/Linux builds, fuzzing and the benchmark matrix. Until those checks pass, the controller remains a tested policy module and must not be advertised as active download behaviour.
