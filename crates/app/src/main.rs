@@ -485,11 +485,7 @@ fn app() -> eframe::Result {
     // The log (release builds too) and the crash monitor.
     if let Some(data) = mdm_ipc::data_dir() {
         mdm_crash::logs::init(&data, mdm_crash::logs::APP);
-        tracing::info!(
-            "DownloadX {} ({}) starting",
-            help::VERSION,
-            help::COMMIT
-        );
+        tracing::info!("DownloadX {} ({}) starting", help::VERSION, help::COMMIT);
     }
     // The default browser, looked for once on a thread of its own (logged): its User-Agent is
     // the one links added by hand go with (#668).
