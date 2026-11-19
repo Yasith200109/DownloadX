@@ -106,13 +106,22 @@ The first live integration must not be implemented as a simple comparison betwee
 
 The safe retirement point is the worker loop boundary after a complete segment, not an arbitrary point in an HTTP response.
 
-1. Give each spawned worker its own retirement signal, held by the supervisor in a registry keyed by its `WorkerId`. Keep the download-wide cancellation token separate; it remains reserved for pause/cancel/complete.
+1. Use a per-worker retirement request keyed by monotonic `WorkerId` in the planner, separate from the download-wide cancellation token. The planner only lets the worker consume the request when it no longer owns a segment; this prevents retirement while any bytes remain claimed or uncommitted.
 2. Have the `JoinSet` task return its `WorkerId` with the worker result so the supervisor can remove exactly the completed worker from the registry. Never treat `next_id` as the number of active workers; IDs remain monotonically increasing.
-3. A worker checks its retirement signal before asking the planner for another assignment. A worker already inside `receive_all` is allowed to finish its current segment. `Writer::wait` has then awaited the disk write and called `Planner::commit`; the worker can return without abandoning buffered bytes or releasing an uncommitted claim.
+3. A worker checks its planner retirement request before asking for another assignment. A worker already inside `receive_all` is allowed to finish its current segment. `Writer::wait` has then awaited the disk write and called `Planner::commit`; the worker can return without abandoning buffered bytes or releasing an uncommitted claim.
 4. If a worker is between segments after a preemption or retryable error, the existing path releases its planner claim before the next loop iteration; it can then retire at that boundary. Do not abort its task or cancel its HTTP body as a shortcut.
 5. When the target falls, mark only the excess live workers for retirement (prefer the newest non-probe workers). When the target rises, spawn fresh workers with new IDs until the live-task count reaches the target. The supervisor continues to own respawn, host caps, range gating, file-size limits and the final completion check.
 6. Keep the probe/connection-0 fallback invariant: no-range servers must continue with the original whole-file stream. A controller target of one must never cancel or retire the only worker that can finish a no-range download.
 7. On global cancellation or completion, retain the existing shared-token shutdown path and await every worker. A retirement signal must never mask a fatal error or turn a cancelled download into success.
+
+
+
+### Implemented groundwork (2026-11-19)
+
+- `Planner` now records cooperative retirement requests by `WorkerId` and only consumes a request after that worker no longer owns a segment.
+- `worker()` checks the request at the top of its assignment loop, after the previous segment's `Writer::wait` / `Planner::commit` path has completed or after a failed/preempted claim has been released. It then marks the connection finished and returns normally.
+- Planner tests cover a retirement request during a partially committed segment (it remains pending until the full segment is committed) and retirement after a failed segment is released.
+- This is the cooperative retirement primitive only. The supervisor does not yet issue target-based retirement requests, track live worker tasks for resizing, or respawn to a controller target. Request RTT/status telemetry is also not yet wired. The adaptive policy remains inactive.
 
 ### Telemetry still required for a live controller
 
