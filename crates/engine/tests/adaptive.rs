@@ -43,7 +43,8 @@ async fn adaptive_supervisor_pause_and_resume_preserves_every_byte() {
         }
         assert!(
             std::time::Instant::now() < deadline,
-            "the adaptive download did not reach its observation window ({} bytes)", snapshot.downloaded
+            "the adaptive download did not reach its observation window ({} bytes)",
+            snapshot.downloaded
         );
     };
 
@@ -72,5 +73,8 @@ async fn adaptive_supervisor_pause_and_resume_preserves_every_byte() {
     let data = std::fs::read(&outcome.path).unwrap();
     let mut expected = vec![0; 32 << 20];
     content::fill(2026, 0, &mut expected);
-    assert_eq!(data, expected, "pause/resume must not lose or duplicate bytes");
+    assert_eq!(
+        data, expected,
+        "pause/resume must not lose or duplicate bytes"
+    );
 }
