@@ -332,10 +332,12 @@ Step by step: [your first download](docs/guide-first-download.md) ·
 
 ## The benchmark in detail
 
-Both programs downloaded the same files from the same local test server
-([labserver](crates/labserver)), with the network trouble each scenario names: seven runs each,
-both at their default settings. DownloadX finished first in **all seven scenarios**; every difference is
-statistically significant (Mann-Whitney p < 0.001), and DownloadX used less CPU in every one.
+The benchmark report currently included here is inherited from the original
+[Mister Download Manager](https://github.com/anefzaoui/misterdownloadmanager) project. It records
+seven runs per scenario against IDM on the original project's local test server. These results have
+**not yet been independently reproduced on a DownloadX-branded build**, so they are historical
+upstream measurements, not a performance claim for a new DownloadX release. We will publish
+fresh results after the DownloadX engine changes are integrated and the benchmark matrix is rerun.
 
 <p align="center">
   <picture>
@@ -348,28 +350,18 @@ On a server that allows only two connections, DownloadX used 2 and still finishe
 The full table, the machine and the raw data: [docs/bench/run5/REPORT.md](docs/bench/run5/REPORT.md).
 The harness is in [tools/bench](tools/bench), so anyone can run it again.
 
-## Not a reverse-engineering project
+## Project origin and compatibility
 
-DownloadX is an independent, clean-room program. It is a new implementation of a familiar way of
-working, not a copy of anyone's software.
+DownloadX is a rebranded continuation of
+[Mister Download Manager](https://github.com/anefzaoui/misterdownloadmanager), built on that
+project's existing open-source codebase. This repository preserves the applicable upstream
+copyright notices and license; see [LICENSE](LICENSE) and [ATTRIBUTION.md](ATTRIBUTION.md).
+Changes made for DownloadX are developed in this repository and tracked in its commit history.
 
-- **No one else's code or assets.** It contains no code, binaries, artwork, icons, sounds or
-  text from Internet Download Manager, nor code from any other download manager. The app icon
-  was made for DownloadX with ChatGPT (OpenAI's image generation); the other icons come from openly
-  licensed sets ([ATTRIBUTION.md](ATTRIBUTION.md)).
-- **Nothing taken apart.** No IDM file was ever disassembled, decompiled, debugged, patched or
-  inspected below its user interface, and its licensing, trial and registration were never
-  touched or bypassed.
-- **Learned as a user learns.** What DownloadX does was learned from IDM's public documentation and
-  help pages, its public screenshots, and by using a licensed copy as a black box: downloading
-  test files from our own test server ([labserver](crates/labserver)) and watching what reached
-  the network and the screen.
-- **Built on public standards.** The download engine follows the HTTP specifications (RFC 9110,
-  RFC 9112) and was designed, tested and measured independently. Its speed comes from its own
-  design, which the benchmark shows.
-- **Not affiliated.** DownloadX isn't affiliated with, endorsed by or connected to Tonec Inc.
-  "Internet Download Manager" and "IDM" are trademarks of their owner, named here only to
-  describe the layout people already know and to compare the two programs.
+DownloadX uses standard HTTP range requests and other public networking protocols. It is not
+affiliated with, endorsed by or connected to Tonec Inc. "Internet Download Manager" and "IDM"
+are trademarks of their owner, named here only to identify the product used in comparisons.
+
 
 ## For developers
 
