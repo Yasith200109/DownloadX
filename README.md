@@ -25,7 +25,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Yasith200109/DownloadX-Windows/stargazers"><img src="https://img.shields.io/github/stars/anefzaoui/misterdownloadmanager?style=social&label=Star%20MDM" alt="Star DownloadX on GitHub" height="28"></a><br>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/stargazers"><img src="https://img.shields.io/github/stars/Yasith200109/DownloadX-Windows?style=social&label=Star%20DownloadX" alt="Star DownloadX on GitHub" height="28"></a><br>
   <sub>⭐ <b>Like it? Give it a star.</b> MDM has no ads and no marketing budget: stars are how people find it.</sub>
 </p>
 
@@ -51,13 +51,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/github/v/release/anefzaoui/misterdownloadmanager?logo=github" alt="Latest release"></a>
-  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases"><img src="https://img.shields.io/github/downloads/anefzaoui/misterdownloadmanager/total?logo=github" alt="Downloads"></a>
-  <a href="https://github.com/Yasith200109/DownloadX-Windows/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/anefzaoui/misterdownloadmanager/ci.yml?logo=github&label=ci" alt="CI"></a>
-  <a href="https://github.com/Yasith200109/DownloadX-Windows/stargazers"><img src="https://img.shields.io/github/stars/anefzaoui/misterdownloadmanager?logo=github" alt="GitHub stars"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/github/v/release/Yasith200109/DownloadX-Windows?logo=github" alt="Latest release"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases"><img src="https://img.shields.io/github/downloads/Yasith200109/DownloadX-Windows/total?logo=github" alt="Downloads"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Yasith200109/DownloadX-Windows/ci.yml?logo=github&label=ci" alt="CI"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/stargazers"><img src="https://img.shields.io/github/stars/Yasith200109/DownloadX-Windows?logo=github" alt="GitHub stars"></a>
   <a href="https://addons.mozilla.org/firefox/addon/mister-download-manager/"><img src="https://img.shields.io/amo/v/mister-download-manager?logo=firefoxbrowser&label=Firefox%20add-on" alt="Firefox add-on"></a>
   <a href="https://chromewebstore.google.com/detail/mister-download-manager/ejoleppdfgjdndddcjoehopknmlglojp"><img src="https://img.shields.io/chrome-web-store/v/ejoleppdfgjdndddcjoehopknmlglojp?logo=googlechrome&label=Chrome%20Web%20Store" alt="Chrome Web Store"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/anefzaoui/misterdownloadmanager" alt="GPL-3.0 license"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Yasith200109/DownloadX-Windows" alt="GPL-3.0 license"></a>
 </p>
 
 | 🚀 [Download](#download) | ⚡ [Why switch](#why-switch-from-idm) | 🖼️ [Screenshots](#screenshots) | ✨ [Getting started](docs/getting-started.md) | 📜 [Help and tutorials](docs/README.md) |
@@ -510,10 +510,10 @@ shows what each one did.
 If MDM saves you time, a star is the quickest way to say so, and it helps the next person find
 a free download manager. [Star it on GitHub](https://github.com/Yasith200109/DownloadX-Windows/stargazers).
 
-<a href="https://star-history.com/#anefzaoui/misterdownloadmanager&Date">
+<a href="https://star-history.com/#Yasith200109/DownloadX-Windows&Date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=anefzaoui/misterdownloadmanager&type=Date&theme=dark">
-    <img src="https://api.star-history.com/svg?repos=anefzaoui/misterdownloadmanager&type=Date" alt="DownloadX's GitHub stars over time" width="600">
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Yasith200109/DownloadX-Windows&type=Date&theme=dark">
+    <img src="https://api.star-history.com/svg?repos=Yasith200109/DownloadX-Windows&type=Date" alt="DownloadX's GitHub stars over time" width="600">
   </picture>
 </a>
 
