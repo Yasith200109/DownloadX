@@ -4606,7 +4606,6 @@ async fn request(ctx: &Ctx, target: &Target, from: u64, to: u64) -> Result<Body,
             return Err(e);
         }
     };
-    };
     // A resumed download asks nothing before its connections: the first one's answer is the
     // first it gets (#954).
     if let Some(seen) = ctx.shared.seen.get() {
