@@ -200,6 +200,11 @@ impl Planner {
         self.retire.remove(&w)
     }
 
+    /// Cancel a pending retirement if a newer controller observation raises the target again.
+    pub fn cancel_retirement(&mut self, w: WorkerId) {
+        self.retire.remove(&w);
+    }
+
     /// Next work for free worker `w`. `after` is the end of the segment it just finished, if any.
     /// `None` means there is nothing worth splitting: the worker should stop.
     pub fn assign(&mut self, w: WorkerId, after: Option<u64>) -> Option<Assignment> {
