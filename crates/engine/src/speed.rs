@@ -358,5 +358,4 @@ mod tests {
         assert_eq!(controller.observe(observation), 3);
         assert_eq!(controller.observe(observation), 4);
     }
-
 }
