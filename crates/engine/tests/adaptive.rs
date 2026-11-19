@@ -43,7 +43,7 @@ async fn adaptive_supervisor_pause_and_resume_preserves_every_byte() {
         }
         assert!(
             std::time::Instant::now() < deadline,
-            "the adaptive download did not reach its observation window: {snapshot:?}"
+            "the adaptive download did not reach its observation window ({} bytes)", snapshot.downloaded
         );
     };
 
