@@ -4170,6 +4170,12 @@ async fn worker(ctx: Arc<Ctx>, id: WorkerId, mut first: Option<Body>) -> Result<
         if ctx.cancel.is_cancelled() {
             return Err(Error::Cancelled);
         }
+        // Retirement is observed only between assignments. A worker that is currently
+        // receiving data must finish its segment and let the writer commit it before leaving.
+        if ctx.shared.with_planner(|p| p.take_retirement(id)) {
+            ctx.shared.conn(id, ConnView::finish);
+            return Ok(());
+        }
         let Some(a) = ctx.shared.with_planner(|p| p.assign(id, after.take())) else {
             ctx.shared.conn(id, ConnView::finish);
             return Ok(());
