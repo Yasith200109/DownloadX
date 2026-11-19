@@ -4225,7 +4225,7 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
     let mut desired = max;
     let mut controller = SpeedController::new(SpeedMode::Auto);
     let mut last_sample_at = std::time::Instant::now();
-    let mut last_downloaded = ctx.shared.snapshot().downloaded;
+    let mut last_received = ctx.shared.received.load(Ordering::Relaxed);
     let mut sample_tick = tokio::time::interval_at(
         tokio::time::Instant::now() + Duration::from_secs(3),
         Duration::from_secs(3),
@@ -4260,8 +4260,10 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
                 if ctx.ranges.load(Ordering::SeqCst) == RANGES_YES {
                     let now = std::time::Instant::now();
                     let elapsed = now.saturating_duration_since(last_sample_at);
-                    let snapshot = ctx.shared.snapshot();
-                    let received = snapshot.downloaded.saturating_sub(last_downloaded);
+                    // Count network bytes at receive time, not snapshot.downloaded: the latter
+                    // briefly moves between held-buffer and committed-disk counters.
+                    let total_received = ctx.shared.received.load(Ordering::Relaxed);
+                    let received = total_received.saturating_sub(last_received);
                     let window = ctx.shared.take_request_window();
                     let disk_backpressure = ctx
                         .shared
@@ -4314,7 +4316,7 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
                         live.insert(id);
                     }
                     last_sample_at = now;
-                    last_downloaded = snapshot.downloaded;
+                    last_received = total_received;
                 }
                 continue;
             }
