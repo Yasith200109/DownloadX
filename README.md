@@ -26,7 +26,7 @@
 
 <p align="center">
   <a href="https://github.com/Yasith200109/DownloadX-Windows/stargazers"><img src="https://img.shields.io/github/stars/Yasith200109/DownloadX-Windows?style=social&label=Star%20DownloadX" alt="Star DownloadX on GitHub" height="28"></a><br>
-  <sub>⭐ <b>Like it? Give it a star.</b> MDM has no ads and no marketing budget: stars are how people find it.</sub>
+  <sub>⭐ <b>Like it? Give it a star.</b> DownloadX has no ads or marketing budget: stars are how people find it.</sub>
 </p>
 
 <p align="center">
@@ -517,9 +517,9 @@ a free download manager. [Star it on GitHub](https://github.com/Yasith200109/Dow
   </picture>
 </a>
 
-## Support MDM
+## Support DownloadX
 
-MDM is free and always will be. If it saves you time, you can support its creator on
+DownloadX is free and always will be. If it saves you time, you can support its creator on
 [GitHub Sponsors](https://github.com/sponsors/anefzaoui). It's optional: nothing in the app
 changes or unlocks, and there is no paid edition.
 
