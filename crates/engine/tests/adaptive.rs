@@ -17,7 +17,10 @@ async fn adaptive_supervisor_pause_and_resume_preserves_every_byte() {
 
     let dir = tempfile::tempdir().unwrap();
     let request = Request {
-        url: server.url("/gen/32M/adaptive.bin?seed=2026").parse().unwrap(),
+        url: server
+            .url("/gen/32M/adaptive.bin?seed=2026")
+            .parse()
+            .unwrap(),
         headers: Default::default(),
         dest: Destination::Dir(dir.path().to_owned()),
     };
