@@ -123,10 +123,14 @@ impl SpeedController {
 
         if healthy {
             self.healthy_windows = self.healthy_windows.saturating_add(1);
-            self.baseline_rtt_ms = Some(match self.baseline_rtt_ms {
-                Some(baseline) => baseline.saturating_mul(7).saturating_add(sample.rtt_ms) / 8,
-                None => sample.rtt_ms,
-            });
+            // A zero RTT means the caller has no usable latency sample for this window.
+            // Seeding the baseline with zero would make the first real RTT look congested.
+            if sample.rtt_ms > 0 {
+                self.baseline_rtt_ms = Some(match self.baseline_rtt_ms {
+                    Some(baseline) => baseline.saturating_mul(7).saturating_add(sample.rtt_ms) / 8,
+                    None => sample.rtt_ms,
+                });
+            }
         } else {
             self.healthy_windows = 0;
         }
@@ -283,6 +287,22 @@ mod tests {
         let mut observation = sample(3);
         observation.host_limit = Some(0);
         assert_eq!(controller.observe(observation), 3);
+    }
+
+    #[test]
+    fn missing_rtt_samples_do_not_poison_the_latency_baseline() {
+        let mut controller = SpeedController::new(SpeedMode::Auto);
+        let mut missing = sample(8);
+        missing.rtt_ms = 0;
+        for _ in 0..3 {
+            assert_eq!(controller.observe(missing), 8);
+        }
+
+        // The first real measurement seeds the baseline instead of being compared with zero.
+        assert_eq!(controller.observe(sample(8)), 9);
+        let mut normal = sample(9);
+        normal.rtt_ms = 45;
+        assert_eq!(controller.observe(normal), 9);
     }
 
     #[test]
