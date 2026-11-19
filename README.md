@@ -4,7 +4,7 @@
   <img src="docs/images/logo.png" alt="DownloadX's logo" width="160">
 </p>
 
-<h3 align="center">Downloads faster than IDM. Free, forever.</h3>
+<h3 align="center">Fast, flexible downloads. Free and open source.</h3>
 
 <p align="center">🌐 <a href="https://github.com/Yasith200109/DownloadX-Windows"><b>github.com/Yasith200109/DownloadX-Windows</b></a>: the official website, with the downloads, help and news</p>
 
