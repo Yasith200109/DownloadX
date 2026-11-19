@@ -9,12 +9,6 @@
 <p align="center">🌐 <a href="https://github.com/Yasith200109/DownloadX-Windows"><b>DownloadX on GitHub</b></a>: source code, releases, documentation and issue tracking</p>
 
 <p align="center">
-  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Windows-2a78d6?style=flat-square&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yIDMuNWw4LjUtMS4ydjguMkgyek0xMS41IDIuMkwyMiAuOHY5LjdIMTEuNXpNMiAxMS41aDguNXY4LjJMMiAxOC41ek0xMS41IDExLjVIMjJ2OS43bC0xMC41LTEuNHoiLz48L3N2Zz4%3D" alt="Download for Windows" height="34"></a>
-  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-macOS-2a78d6?style=flat-square&logo=apple&logoColor=white" alt="Download for macOS" height="34"></a>
-  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Linux-2a78d6?style=flat-square&logo=linux&logoColor=white" alt="Download for Linux" height="34"></a>
-</p>
-
-<p align="center">
   🧩 <b>Browser extension:</b><br>
   <a href="https://addons.mozilla.org/firefox/addon/mister-download-manager/"><img src="https://img.shields.io/badge/Add%20to-Firefox-2a78d6?style=flat-square&logo=firefoxbrowser&logoColor=white" alt="Add to Firefox" height="34"></a>
   <a href="https://chromewebstore.google.com/detail/mister-download-manager/ejoleppdfgjdndddcjoehopknmlglojp"><img src="https://img.shields.io/badge/Add%20to-Chrome-2a78d6?style=flat-square&logo=googlechrome&logoColor=white" alt="Add to Chrome" height="34"></a><br>
@@ -91,33 +85,14 @@ the browser button are where you expect them. Measured on the same computer, dow
 test server on that computer (a loopback test: it times the programs, not an internet connection),
 same files, both programs at their default settings ([how we measured](#the-benchmark-in-detail)).
 
-## Download
+## Release status
 
-<p align="center">
-  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Windows-2a78d6?style=flat-square&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yIDMuNWw4LjUtMS4ydjguMkgyek0xMS41IDIuMkwyMiAuOHY5LjdIMTEuNXpNMiAxMS41aDguNXY4LjJMMiAxOC41ek0xMS41IDExLjVIMjJ2OS43bC0xMC41LTEuNHoiLz48L3N2Zz4%3D" alt="Download for Windows" height="34"></a>
-  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-macOS-2a78d6?style=flat-square&logo=apple&logoColor=white" alt="Download for macOS" height="34"></a>
-  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Linux-2a78d6?style=flat-square&logo=linux&logoColor=white" alt="Download for Linux" height="34"></a>
-</p>
+**DownloadX installers and release archives have not been published yet.** This repository is
+currently under development. The first DownloadX release will be announced here after the
+Windows, Linux and macOS builds, installer upgrade behavior, browser integration and release
+checks have been validated.
 
-On the [download page](https://github.com/Yasith200109/DownloadX-Windows/releases/latest), pick
-one:
-
-| File | Choose it when |
-| --- | --- |
-| **`...-setup.exe`** | **Not sure? Take this one.** It installs DownloadX, connects it to your browser and asks your language. |
-| `...-portable.zip` | You want DownloadX on a USB stick or without installing: unzip and run. Everything stays in its folder. |
-| `...-x64.zip` | You want the plain programs without an installer. |
-| `...-setup-arm64.exe`, `...-portable-arm64.zip`, `...-arm64.zip` | The same three for **Windows on ARM** (Snapdragon and other ARM PCs). |
-| `...-setup-x86.exe`, `...-portable-x86.zip`, `...-x86.zip` | The same three for **32-bit Windows 10**. There, choose your own ffmpeg in **Helpers** for the best video qualities: none is built for it that DownloadX can check. |
-| `...-extension-chromium.zip` | You want to add the browser extension by hand (Chrome, Edge, Brave, Opera, Vivaldi). From the stores is easier: [Add to Chrome](https://chromewebstore.google.com/detail/mister-download-manager/ejoleppdfgjdndddcjoehopknmlglojp), [Add to Firefox](https://addons.mozilla.org/firefox/addon/mister-download-manager/). |
-
-The ARM64 and 32-bit files come with every release after 0.5.2; **Check for updates** keeps each
-copy on its own processor's files.
-
-> [!NOTE]
-> Windows may say *"Windows protected your PC"* the first time, because this early version isn't
-> code-signed yet. Click **More info**, then **Run anyway**.
-
+Do not download an upstream Mister Download Manager release and assume it is a DownloadX build.
 ### WinGet
 
 The existing WinGet ID, `AhmedNefzaoui.MisterDownloadManager`, belongs to the upstream
