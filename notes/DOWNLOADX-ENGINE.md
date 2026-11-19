@@ -102,4 +102,28 @@ The first live integration must not be implemented as a simple comparison betwee
 - The planner already exposes active and receiving worker counts, while `ConnView` exposes per-worker speed and status. The supervisor still needs bounded request-latency / response-outcome telemetry before the policy can safely react to network congestion.
 - App settings are serialized with `#[serde(default)]`, and already persist the configured connection ceiling. A future mode preference can be added compatibly, but it should not be surfaced until the live engine actually consumes it.
 
-**Integration gate:** introduce an explicit worker-retirement mechanism that releases planner ownership safely, does not interrupt a blocking disk write, preserves retry and resume semantics, and is tested under pause/cancel/complete races. Only then connect controller targets to the supervisor. Until that gate is met, the controller remains a tested policy module and must not be advertised as active download behaviour.
+### Cooperative retirement protocol to implement
+
+The safe retirement point is the worker loop boundary after a complete segment, not an arbitrary point in an HTTP response.
+
+1. Give each spawned worker its own retirement signal, held by the supervisor in a registry keyed by its `WorkerId`. Keep the download-wide cancellation token separate; it remains reserved for pause/cancel/complete.
+2. Have the `JoinSet` task return its `WorkerId` with the worker result so the supervisor can remove exactly the completed worker from the registry. Never treat `next_id` as the number of active workers; IDs remain monotonically increasing.
+3. A worker checks its retirement signal before asking the planner for another assignment. A worker already inside `receive_all` is allowed to finish its current segment. `Writer::wait` has then awaited the disk write and called `Planner::commit`; the worker can return without abandoning buffered bytes or releasing an uncommitted claim.
+4. If a worker is between segments after a preemption or retryable error, the existing path releases its planner claim before the next loop iteration; it can then retire at that boundary. Do not abort its task or cancel its HTTP body as a shortcut.
+5. When the target falls, mark only the excess live workers for retirement (prefer the newest non-probe workers). When the target rises, spawn fresh workers with new IDs until the live-task count reaches the target. The supervisor continues to own respawn, host caps, range gating, file-size limits and the final completion check.
+6. Keep the probe/connection-0 fallback invariant: no-range servers must continue with the original whole-file stream. A controller target of one must never cancel or retire the only worker that can finish a no-range download.
+7. On global cancellation or completion, retain the existing shared-token shutdown path and await every worker. A retirement signal must never mask a fatal error or turn a cancelled download into success.
+
+### Telemetry still required for a live controller
+
+- Count actual response outcomes at the request boundary, including status 429/503, transport failures, timeouts and Retry-After; supervisor task errors alone miss retries handled inside a worker.
+- Measure request RTT/TTFB per response. `Snapshot.server.rtt` is a connection-open estimate, not a rolling per-request RTT signal, so it must not be misused as congestion telemetry.
+- Sample aggregate received bytes over a monotonic bounded window; exclude windows in which `disk_held` says writes constrained the network.
+- Derive active task count from the supervisor's live-worker registry, not planner ownership alone (a worker may be assigned while retrying).
+- Treat unsupported ranges, known host caps, per-download/global limiters and disk backpressure as hard guardrails before applying any target.
+
+### Retirement regression tests
+
+Before enabling the controller, cover: retirement while receiving a segment; retirement while a disk write is pending; retirement after a preempted claim; retry then retirement; pause/cancel racing with retirement; final segment completion racing with target reduction; worker respawn after a prior worker exits; no-range probe preservation; resume-state byte continuity; and a many-worker randomized planner test proving every byte is committed at most once.
+
+**Integration gate:** implement the protocol and telemetry above, then run the engine suite, app tests, Windows/macOS/Linux builds, fuzzing and the benchmark matrix. Until those checks pass, the controller remains a tested policy module and must not be advertised as active download behaviour.
