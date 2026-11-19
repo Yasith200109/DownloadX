@@ -39,9 +39,7 @@ async fn adaptive_supervisor_pause_and_resume_preserves_every_byte() {
     let file = loop {
         tokio::time::sleep(std::time::Duration::from_millis(50)).await;
         let snapshot = download.snapshot();
-        if snapshot.downloaded >= 1 << 20
-            && started.elapsed() >= std::time::Duration::from_secs(4)
-        {
+        if snapshot.downloaded >= 1 << 20 && started.elapsed() >= std::time::Duration::from_secs(4) {
             break snapshot.file.expect("the download has a destination");
         }
         assert!(
