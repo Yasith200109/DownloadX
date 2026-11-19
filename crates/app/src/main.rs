@@ -135,13 +135,13 @@ pub fn app_picture() -> std::sync::Arc<egui::IconData> {
     .clone()
 }
 
-/// DOWNLOADX_OFFSCREEN=1, for screenshots and checks (tools/lab/docs-shots.ps1): every window opens
+/// MDM_OFFSCREEN=1, for screenshots and checks (tools/lab/docs-shots.ps1): every window opens
 /// far off the screens, never takes the focus and has no taskbar button, and there is no tray
 /// icon and no sound, so nothing shows while it runs. The windows still draw, and PrintWindow
 /// captures them.
 pub fn offscreen() -> bool {
     static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-    *ON.get_or_init(|| std::env::var_os("DOWNLOADX_OFFSCREEN").is_some_and(|v| v == "1"))
+    *ON.get_or_init(|| std::env::var_os("MDM_OFFSCREEN").is_some_and(|v| v == "1"))
 }
 
 /// The clipboard's text, if any. Never read in an off-screen run ([`offscreen`]): its windows
@@ -149,12 +149,12 @@ pub fn offscreen() -> bool {
 /// address came from it, and was fetched). It may wait for the clipboard's owner for ever:
 /// never called on the window's thread, only by `clipboard`'s reader (#418, #661).
 pub fn clipboard_text() -> clipboard::Read {
-    // Off-screen test copies: DOWNLOADX_TEST_CLIPBOARD=<file> is what they find in the clipboard
+    // Off-screen test copies: MDM_TEST_CLIPBOARD=<file> is what they find in the clipboard
     // (#709's checks of Add batch download from clipboard), read when they ask, as the
     // clipboard would be; the person's own clipboard is never read. No file: an empty
     // clipboard; a file that can't be read (a check holds it open, #1157's): one that can't be.
     if offscreen()
-        && let Some(file) = std::env::var_os("DOWNLOADX_TEST_CLIPBOARD")
+        && let Some(file) = std::env::var_os("MDM_TEST_CLIPBOARD")
     {
         return match std::fs::read_to_string(file) {
             Ok(text) => clipboard::Read::Text(text),
@@ -194,10 +194,10 @@ fn system_clipboard_text() -> clipboard::Read {
 /// A number that changes whenever the clipboard does, so the watch for copied links
 /// (clipboard.rs) reads it only then: Windows' sequence number. None where the system keeps none
 /// a program can ask for without opening the clipboard (Linux, macOS): read at each look.
-/// Off-screen test copies: when their `DOWNLOADX_TEST_CLIPBOARD` file last changed (or never).
+/// Off-screen test copies: when their `MDM_TEST_CLIPBOARD` file last changed (or never).
 pub fn clipboard_changes() -> Option<u64> {
     if offscreen() {
-        let changed = std::env::var_os("DOWNLOADX_TEST_CLIPBOARD")
+        let changed = std::env::var_os("MDM_TEST_CLIPBOARD")
             .and_then(|f| std::fs::metadata(f).ok()?.modified().ok())
             .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
             .map_or(0, |d| d.as_nanos() as u64);
@@ -270,12 +270,12 @@ fn write_clipboard(off: bool, text: String) -> Option<String> {
     }
 }
 
-/// Where [`offscreen`] puts the main window: far off the screens, or at `DOWNLOADX_OFFSCREEN_AT=x,y`.
+/// Where [`offscreen`] puts the main window: far off the screens, or at `MDM_OFFSCREEN_AT=x,y`.
 /// That is for a machine whose screen nobody watches (the docs screenshots on GitHub's runner,
 /// .github/workflows/docs-shots.yml): there the software OpenGL (Mesa's llvmpipe) presents
 /// through GDI, which draws nothing off the screens.
 pub fn offscreen_at() -> [f32; 2] {
-    std::env::var("DOWNLOADX_OFFSCREEN_AT")
+    std::env::var("MDM_OFFSCREEN_AT")
         .ok()
         .and_then(|v| {
             let (x, y) = v.split_once(',')?;
