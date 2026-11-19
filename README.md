@@ -1,17 +1,17 @@
-# Mister Download Manager
+# DownloadX
 
 <p align="center">
-  <img src="docs/images/logo.png" alt="Mister Download Manager's logo" width="160">
+  <img src="docs/images/logo.png" alt="DownloadX's logo" width="160">
 </p>
 
 <h3 align="center">Downloads faster than IDM. Free, forever.</h3>
 
-<p align="center">🌐 <a href="https://misterdownloadmanager.com"><b>misterdownloadmanager.com</b></a>: the official website, with the downloads, help and news</p>
+<p align="center">🌐 <a href="https://github.com/Yasith200109/DownloadX-Windows"><b>github.com/Yasith200109/DownloadX-Windows</b></a>: the official website, with the downloads, help and news</p>
 
 <p align="center">
-  <a href="https://github.com/anefzaoui/misterdownloadmanager/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Windows-2a78d6?style=flat-square&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yIDMuNWw4LjUtMS4ydjguMkgyek0xMS41IDIuMkwyMiAuOHY5LjdIMTEuNXpNMiAxMS41aDguNXY4LjJMMiAxOC41ek0xMS41IDExLjVIMjJ2OS43bC0xMC41LTEuNHoiLz48L3N2Zz4%3D" alt="Download for Windows" height="34"></a>
-  <a href="https://github.com/anefzaoui/misterdownloadmanager/releases/latest"><img src="https://img.shields.io/badge/Download%20for-macOS-2a78d6?style=flat-square&logo=apple&logoColor=white" alt="Download for macOS" height="34"></a>
-  <a href="https://github.com/anefzaoui/misterdownloadmanager/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Linux-2a78d6?style=flat-square&logo=linux&logoColor=white" alt="Download for Linux" height="34"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Windows-2a78d6?style=flat-square&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yIDMuNWw4LjUtMS4ydjguMkgyek0xMS41IDIuMkwyMiAuOHY5LjdIMTEuNXpNMiAxMS41aDguNXY4LjJMMiAxOC41ek0xMS41IDExLjVIMjJ2OS43bC0xMC41LTEuNHoiLz48L3N2Zz4%3D" alt="Download for Windows" height="34"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-macOS-2a78d6?style=flat-square&logo=apple&logoColor=white" alt="Download for macOS" height="34"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Linux-2a78d6?style=flat-square&logo=linux&logoColor=white" alt="Download for Linux" height="34"></a>
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/anefzaoui/misterdownloadmanager/stargazers"><img src="https://img.shields.io/github/stars/anefzaoui/misterdownloadmanager?style=social&label=Star%20MDM" alt="Star Mister Download Manager on GitHub" height="28"></a><br>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/stargazers"><img src="https://img.shields.io/github/stars/anefzaoui/misterdownloadmanager?style=social&label=Star%20MDM" alt="Star DownloadX on GitHub" height="28"></a><br>
   <sub>⭐ <b>Like it? Give it a star.</b> MDM has no ads and no marketing budget: stars are how people find it.</sub>
 </p>
 
@@ -46,15 +46,15 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/main-dark.webp">
-    <img src="docs/images/main-light.webp" alt="Mister Download Manager's main window: categories, toolbar and a list of downloads" width="920">
+    <img src="docs/images/main-light.webp" alt="DownloadX's main window: categories, toolbar and a list of downloads" width="920">
   </picture>
 </p>
 
 <p align="center">
-  <a href="https://github.com/anefzaoui/misterdownloadmanager/releases/latest"><img src="https://img.shields.io/github/v/release/anefzaoui/misterdownloadmanager?logo=github" alt="Latest release"></a>
-  <a href="https://github.com/anefzaoui/misterdownloadmanager/releases"><img src="https://img.shields.io/github/downloads/anefzaoui/misterdownloadmanager/total?logo=github" alt="Downloads"></a>
-  <a href="https://github.com/anefzaoui/misterdownloadmanager/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/anefzaoui/misterdownloadmanager/ci.yml?logo=github&label=ci" alt="CI"></a>
-  <a href="https://github.com/anefzaoui/misterdownloadmanager/stargazers"><img src="https://img.shields.io/github/stars/anefzaoui/misterdownloadmanager?logo=github" alt="GitHub stars"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/github/v/release/anefzaoui/misterdownloadmanager?logo=github" alt="Latest release"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases"><img src="https://img.shields.io/github/downloads/anefzaoui/misterdownloadmanager/total?logo=github" alt="Downloads"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/anefzaoui/misterdownloadmanager/ci.yml?logo=github&label=ci" alt="CI"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/stargazers"><img src="https://img.shields.io/github/stars/anefzaoui/misterdownloadmanager?logo=github" alt="GitHub stars"></a>
   <a href="https://addons.mozilla.org/firefox/addon/mister-download-manager/"><img src="https://img.shields.io/amo/v/mister-download-manager?logo=firefoxbrowser&label=Firefox%20add-on" alt="Firefox add-on"></a>
   <a href="https://chromewebstore.google.com/detail/mister-download-manager/ejoleppdfgjdndddcjoehopknmlglojp"><img src="https://img.shields.io/chrome-web-store/v/ejoleppdfgjdndddcjoehopknmlglojp?logo=googlechrome&label=Chrome%20Web%20Store" alt="Chrome Web Store"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/anefzaoui/misterdownloadmanager" alt="GPL-3.0 license"></a>
@@ -70,12 +70,12 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/races-dark.svg">
-    <img src="docs/images/races-light.svg" alt="Three races. A big 1 GB file: Mister Download Manager 1 second, IDM 5.5 seconds, 5 times faster. A small file: instantly versus 3.1 seconds, over 100 times faster. A shaky connection: 1.6 seconds versus 5.4 seconds, 3 times faster." width="880">
+    <img src="docs/images/races-light.svg" alt="Three races. A big 1 GB file: DownloadX 1 second, IDM 5.5 seconds, 5 times faster. A small file: instantly versus 3.1 seconds, over 100 times faster. A shaky connection: 1.6 seconds versus 5.4 seconds, 3 times faster." width="880">
   </picture>
 </p>
 
 <!-- compare:start -->
-| | Mister Download Manager | IDM 6.42 |
+| | DownloadX | IDM 6.42 |
 | --- | --- | --- |
 | Download a big file (1 GB) | **1 second** | 5.5 seconds |
 | Download a small file | **instantly** | 3.1 seconds |
@@ -94,12 +94,12 @@ same files, both programs at their default settings ([how we measured](#the-benc
 ## Download
 
 <p align="center">
-  <a href="https://github.com/anefzaoui/misterdownloadmanager/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Windows-2a78d6?style=flat-square&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yIDMuNWw4LjUtMS4ydjguMkgyek0xMS41IDIuMkwyMiAuOHY5LjdIMTEuNXpNMiAxMS41aDguNXY4LjJMMiAxOC41ek0xMS41IDExLjVIMjJ2OS43bC0xMC41LTEuNHoiLz48L3N2Zz4%3D" alt="Download for Windows" height="34"></a>
-  <a href="https://github.com/anefzaoui/misterdownloadmanager/releases/latest"><img src="https://img.shields.io/badge/Download%20for-macOS-2a78d6?style=flat-square&logo=apple&logoColor=white" alt="Download for macOS" height="34"></a>
-  <a href="https://github.com/anefzaoui/misterdownloadmanager/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Linux-2a78d6?style=flat-square&logo=linux&logoColor=white" alt="Download for Linux" height="34"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Windows-2a78d6?style=flat-square&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yIDMuNWw4LjUtMS4ydjguMkgyek0xMS41IDIuMkwyMiAuOHY5LjdIMTEuNXpNMiAxMS41aDguNXY4LjJMMiAxOC41ek0xMS41IDExLjVIMjJ2OS43bC0xMC41LTEuNHoiLz48L3N2Zz4%3D" alt="Download for Windows" height="34"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-macOS-2a78d6?style=flat-square&logo=apple&logoColor=white" alt="Download for macOS" height="34"></a>
+  <a href="https://github.com/Yasith200109/DownloadX-Windows/releases/latest"><img src="https://img.shields.io/badge/Download%20for-Linux-2a78d6?style=flat-square&logo=linux&logoColor=white" alt="Download for Linux" height="34"></a>
 </p>
 
-On the [download page](https://github.com/anefzaoui/misterdownloadmanager/releases/latest), pick
+On the [download page](https://github.com/Yasith200109/DownloadX-Windows/releases/latest), pick
 one:
 
 | File | Choose it when |
@@ -130,7 +130,7 @@ winget upgrade AhmedNefzaoui.MisterDownloadManager
 
 Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
 Which Windows files are signed, who reviews and approves them, and what MDM sends over the
-network: [code signing policy](https://misterdownloadmanager.com/code-signing-policy.html).
+network: [code signing policy](https://github.com/Yasith200109/DownloadX-Windows/code-signing-policy.html).
 
 ### On Linux
 
@@ -151,7 +151,7 @@ Up to version 0.2.4, the files' names end in `-experimental`.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/main-linux-dark.webp">
-    <img src="docs/images/main-linux.webp" alt="Mister Download Manager's main window on Ubuntu's GNOME desktop" width="620">
+    <img src="docs/images/main-linux.webp" alt="DownloadX's main window on Ubuntu's GNOME desktop" width="620">
   </picture>
 </p>
 
@@ -159,7 +159,7 @@ Up to version 0.2.4, the files' names end in `-experimental`.
 
 Fresh builds for **macOS** (Apple Silicon and Intel) are on the same download page, marked
 `-experimental`: we haven't tried them on a Mac ourselves yet. Give them a go and
-[tell us how it went](https://github.com/anefzaoui/misterdownloadmanager/issues/new/choose); you'll
+[tell us how it went](https://github.com/Yasith200109/DownloadX-Windows/issues/new/choose); you'll
 help make them as solid as the Windows and Linux versions.
 
 | File | For |
@@ -340,7 +340,7 @@ statistically significant (Mann-Whitney p < 0.001), and MDM used less CPU in eve
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/bench-time-dark.svg">
-    <img src="docs/images/bench-time-light.svg" alt="Time to finish a download in seconds, Mister Download Manager versus IDM, in seven scenarios" width="880">
+    <img src="docs/images/bench-time-light.svg" alt="Time to finish a download in seconds, DownloadX versus IDM, in seven scenarios" width="880">
   </picture>
 </p>
 
@@ -440,7 +440,7 @@ pieces fit.
 | `python tools/shots/make.py` | The help pages' pictures, from one list (`tools/shots/shots.toml`): shot, cropped, annotated, lossless WebP; `make.py check` keeps them in step |
 | `tools/lab/wsl/` | A WSL2 machine that builds MDM for Linux in minutes and shoots its windows on a virtual screen ([README](tools/lab/wsl/README.md)) |
 | `tools\lab\progress-shots.ps1` | The progress window of a video (yt-dlp) and of a torrent, from a swarm on this computer (`cargo run -p mdm-torrent --example swarm`) |
-| `python tools/website/build.py --serve` | misterdownloadmanager.com into `target/site` (help pages from `docs/`, news from the CHANGELOG, FAQ and legal pages from `website/content/`), served on http://127.0.0.1:8765; GitHub Pages publishes it (`pages.yml`) |
+| `python tools/website/build.py --serve` | github.com/Yasith200109/DownloadX-Windows into `target/site` (help pages from `docs/`, news from the CHANGELOG, FAQ and legal pages from `website/content/`), served on http://127.0.0.1:8765; GitHub Pages publishes it (`pages.yml`) |
 | `python tools/readme/social.py` | The repository's social preview card (`docs/images/social-preview.png`) |
 | `MDM_FIT_AUDIT=<file>` | Lists every text that doesn't fit its window or runs over another, for checking a translation |
 | `MDM_OFFSCREEN=1` | Opens every window off the screen, without focus, tray icon or sound (screenshots and checks) |
@@ -462,14 +462,14 @@ Linux, and some corners are still "good enough for now".
   Flatpak browsers aren't supported yet.
 
 Bug reports are welcome in
-[Issues](https://github.com/anefzaoui/misterdownloadmanager/issues/new/choose): **Help → Report a problem**
+[Issues](https://github.com/Yasith200109/DownloadX-Windows/issues/new/choose): **Help → Report a problem**
 in the app fills in your version and system. Ideas are welcome in
-[Discussions](https://github.com/anefzaoui/misterdownloadmanager/discussions/categories/ideas). Pull requests are accepted under the same licence: start with [CONTRIBUTING.md](CONTRIBUTING.md).
+[Discussions](https://github.com/Yasith200109/DownloadX-Windows/discussions/categories/ideas). Pull requests are accepted under the same licence: start with [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Made possible by these amazing humans
 
 Everyone who sent a pull request, opened an issue or joined a conversation here: thank you. People
-with pull requests first, then issues, then comments; [the website](https://misterdownloadmanager.com/contributors.html)
+with pull requests first, then issues, then comments; [the website](https://github.com/Yasith200109/DownloadX-Windows/contributors.html)
 shows what each one did.
 
 <!-- contributors:start (python tools/contributors.py readme) -->
@@ -508,12 +508,12 @@ shows what each one did.
 ## ⭐ Star history
 
 If MDM saves you time, a star is the quickest way to say so, and it helps the next person find
-a free download manager. [Star it on GitHub](https://github.com/anefzaoui/misterdownloadmanager/stargazers).
+a free download manager. [Star it on GitHub](https://github.com/Yasith200109/DownloadX-Windows/stargazers).
 
 <a href="https://star-history.com/#anefzaoui/misterdownloadmanager&Date">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=anefzaoui/misterdownloadmanager&type=Date&theme=dark">
-    <img src="https://api.star-history.com/svg?repos=anefzaoui/misterdownloadmanager&type=Date" alt="Mister Download Manager's GitHub stars over time" width="600">
+    <img src="https://api.star-history.com/svg?repos=anefzaoui/misterdownloadmanager&type=Date" alt="DownloadX's GitHub stars over time" width="600">
   </picture>
 </a>
 
@@ -525,7 +525,7 @@ changes or unlocks, and there is no paid edition.
 
 ## Licence and credits
 
-Copyright (c) 2026 Ahmed Nefzaoui. Mister Download Manager is free software under the
+Copyright (c) 2026 Ahmed Nefzaoui. DownloadX is free software under the
 [GNU General Public License, version 3](LICENSE) or (at your option) any later version.
 
 Built on [egui](https://github.com/emilk/egui) through
