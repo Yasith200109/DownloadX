@@ -30,16 +30,16 @@ async fn adaptive_supervisor_pause_and_resume_preserves_every_byte() {
     };
     let download = Download::start(request, opts.clone());
 
-    // Wait for confirmed range traffic, at least 1 MiB of progress, and more than one
-    // three-second supervisor interval. The server's rate and stall keep the transfer alive.
+    // The lab server supports byte ranges by default. Wait for real progress and more than
+    // one three-second supervisor interval; request log entries are emitted only when a
+    // response body closes, so they cannot prove range support while the transfer is active.
+    // The server's rate and stall keep the transfer alive.
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(30);
     let started = std::time::Instant::now();
     let file = loop {
         tokio::time::sleep(std::time::Duration::from_millis(50)).await;
         let snapshot = download.snapshot();
-        let has_ranges = server.log().iter().any(|entry| entry.status == 206);
-        if has_ranges
-            && snapshot.downloaded >= 1 << 20
+        if snapshot.downloaded >= 1 << 20
             && started.elapsed() >= std::time::Duration::from_secs(4)
         {
             break snapshot.file.expect("the download has a destination");
