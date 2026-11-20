@@ -131,7 +131,8 @@ def one_trial(label: str, exe: Path, out: Path, dest: Path, server_name: str,
         if p.exists():
             p.unlink()
 
-    data_dir = out / "client-data" / f"{label.lower()}-{sid}-{'w' if warmup else run_index:02}"
+    trial_tag = "w" if warmup else f"{run_index:02d}"
+    data_dir = out / "client-data" / f"{label.lower()}-{sid}-{trial_tag}"
     if data_dir.exists():
         shutil.rmtree(data_dir)
     data_dir.mkdir(parents=True)
