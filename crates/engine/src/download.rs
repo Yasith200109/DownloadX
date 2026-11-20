@@ -4170,6 +4170,30 @@ where
     }
 }
 
+/// Replace pending worker-retirement requests to match the latest target. The probe
+/// (worker 0) is never retired: it is the only safe whole-file fallback if ranges are refused.
+fn update_retirement_requests(
+    planner: &mut Planner,
+    live: &HashSet<WorkerId>,
+    target: u32,
+) -> Vec<WorkerId> {
+    let mut candidates: Vec<_> = live.iter().copied().filter(|id| *id != 0).collect();
+    candidates.sort_unstable_by(|a, b| b.cmp(a));
+    let retire_count = live.len().saturating_sub(target as usize);
+
+    // A newer target replaces the previous window's decisions. In particular, a recovered
+    // target must cancel requests that a worker has not consumed at its next segment boundary.
+    for id in live {
+        planner.cancel_retirement(*id);
+    }
+
+    let retiring: Vec<_> = candidates.into_iter().take(retire_count).collect();
+    for id in &retiring {
+        planner.request_retirement(*id);
+    }
+    retiring
+}
+
 /// Run connections until the planner is complete. Respawns a connection when work is left
 /// and none is running (e.g. the others retired).
 async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
@@ -4291,20 +4315,8 @@ async fn supervise(ctx: Arc<Ctx>, first: Option<Body>) -> Result<(), Error> {
                     let target = controller.observe(observation).clamp(1, current_max);
                     desired = target;
 
-                    let mut candidates: Vec<_> =
-                        live.iter().copied().filter(|id| *id != 0).collect();
-                    candidates.sort_unstable_by(|a, b| b.cmp(a));
-                    let retire_count = live.len().saturating_sub(target as usize);
-                    ctx.shared.with_planner(|p| {
-                        // Replace the previous window's retirement decisions atomically. A
-                        // recovered target must be able to cancel requests not yet consumed.
-                        for id in &live {
-                            p.cancel_retirement(*id);
-                        }
-                        for id in candidates.into_iter().take(retire_count) {
-                            p.request_retirement(id);
-                        }
-                    });
+                    ctx.shared
+                        .with_planner(|p| update_retirement_requests(p, &live, target));
                     while live.len() < target as usize {
                         let id = next_id;
                         next_id += 1;
@@ -6139,6 +6151,45 @@ pub(crate) async fn cancellable<T>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn retirement_target_keeps_probe_and_retires_newest_workers_first() {
+        const MB: u64 = 1 << 20;
+        let mut planner = Planner::new(32 * MB, MB);
+        for id in 0..4 {
+            assert!(planner.assign(id, None).is_some());
+        }
+        let live = HashSet::from([0, 1, 2, 3]);
+
+        assert_eq!(update_retirement_requests(&mut planner, &live, 2), vec![3, 2]);
+
+        // Requests are cooperative: they become consumable only after a worker releases its
+        // current segment. The probe is deliberately never selected.
+        planner.release(3);
+        planner.release(2);
+        assert!(planner.take_retirement(3));
+        assert!(planner.take_retirement(2));
+        assert!(!planner.take_retirement(0));
+        assert!(!planner.take_retirement(1));
+    }
+
+    #[test]
+    fn a_recovered_target_cancels_unconsumed_worker_retirements() {
+        const MB: u64 = 1 << 20;
+        let mut planner = Planner::new(32 * MB, MB);
+        for id in 0..4 {
+            assert!(planner.assign(id, None).is_some());
+        }
+        let live = HashSet::from([0, 1, 2, 3]);
+
+        assert_eq!(update_retirement_requests(&mut planner, &live, 2), vec![3, 2]);
+        assert!(update_retirement_requests(&mut planner, &live, 4).is_empty());
+
+        planner.release(3);
+        planner.release(2);
+        assert!(!planner.take_retirement(3));
+        assert!(!planner.take_retirement(2));
+    }
 
     #[test]
     fn pages_lead_on_as_browsers_read_them() {
