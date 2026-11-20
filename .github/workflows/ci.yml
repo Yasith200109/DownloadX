@@ -210,3 +210,14 @@ jobs:
             target/extension/mdm-chromium.zip
             target/extension/mdm-firefox.xpi
             target/extension/mdm-chrome-store.zip
+
+  # The Windows-only adaptive A/B harness and its statistical report must remain syntactically valid.
+  benchmark-tools:
+    name: benchmark tools
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Python syntax
+        run: python3 -m py_compile tools/bench/adaptive_ab.py tools/bench/adaptive_report.py
