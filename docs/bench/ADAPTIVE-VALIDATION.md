@@ -100,3 +100,49 @@ policy and all hard safety ceilings must remain available as the fallback.
   they can be considered validated.
 
 **Release statement:** no measured adaptive speed gain is claimed by this document.
+
+## Pinned A/B revisions
+
+The live supervisor was integrated by commit
+`51745c12c5d83b526bde1036010cdbf0eed4237c`. The reproducible pre-supervisor baseline is
+its direct parent:
+
+- **Baseline:** `7deca2c4f83d73c6c39409a01fe6956e5807a603`
+- **Adaptive candidate:** `39603bde90107d9c44334a5443814510a3ab07cb` (current PR head at the time
+  this plan was updated; the installer/CI-only commits after the engine work do not change the
+  adaptive implementation).
+
+The baseline already contains the bounded telemetry and cooperative-retirement groundwork, but
+does not contain the live adaptive supervisor. This makes it the intended before/after comparison
+for the controller integration. The adaptive candidate also contains later branding, test,
+documentation and installer changes; record both full SHAs and compare the engine source diff
+before interpreting results. Do not describe this as a one-line-only controller benchmark.
+
+### Windows worktree build preparation
+
+From a clean clone of this repository, create two detached worktrees and build each in release
+mode with the same installed Rust toolchain:
+
+```powershell
+git worktree add --detach ..\DownloadX-baseline 7deca2c4f83d73c6c39409a01fe6956e5807a603
+git worktree add --detach ..\DownloadX-adaptive 39603bde90107d9c44334a5443814510a3ab07cb
+
+Push-Location ..\DownloadX-baseline
+cargo build --release --bin misterdownloadmanager --bin labserver
+Pop-Location
+
+Push-Location ..\DownloadX-adaptive
+cargo build --release --bin misterdownloadmanager --bin labserver
+Pop-Location
+```
+
+Keep the resulting executables in separate directories and pass their absolute paths to the A/B
+runner. Do not copy one revision's executable over the other. Record `rustc -Vv`, `cargo -V`,
+`git rev-parse HEAD`, and each worktree's `Cargo.lock` SHA-256 in the environment manifest.
+Use separate `MDM_DATA_DIR` values and fresh destination folders for the two binaries.
+
+The current IDM-vs-MDM script (`tools/bench/bench.py`) is not the A/B runner and must not be
+used to produce adaptive-vs-baseline claims. The dedicated A/B runner must preserve the scenario
+matrix, warm-up, alternating order, checksum validation, raw trial records and failure accounting
+specified above. Until that runner and its results exist, benchmark validation remains pending.
+
