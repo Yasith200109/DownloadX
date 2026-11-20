@@ -75,3 +75,28 @@ jobs:
             throw "SHA256SUMS.txt was not produced"
           }
           Get-ChildItem target/dist -File | ForEach-Object { "$($_.Name) $([math]::Round($_.Length / 1MB, 1)) MB" }
+
+      - name: Install, upgrade and uninstall smoke test
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $setup = Get-ChildItem target/dist -Filter "*-setup.exe" | Select-Object -First 1
+          if (-not $setup) { throw "Setup executable not found" }
+          $installDir = Join-Path $env:RUNNER_TEMP "DownloadX Installer Smoke"
+          $installArgs = @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-", "/DIR=$installDir", "/TASKS=")
+
+          $first = Start-Process -FilePath $setup.FullName -ArgumentList $installArgs -Wait -PassThru
+          if ($first.ExitCode -ne 0) { throw "First install failed: $($first.ExitCode)" }
+          $app = Join-Path $installDir "misterdownloadmanager.exe"
+          if (-not (Test-Path $app)) { throw "Installed application executable is missing" }
+
+          $upgrade = Start-Process -FilePath $setup.FullName -ArgumentList $installArgs -Wait -PassThru
+          if ($upgrade.ExitCode -ne 0) { throw "In-place upgrade failed: $($upgrade.ExitCode)" }
+          if (-not (Test-Path $app)) { throw "Application missing after in-place upgrade" }
+
+          $uninstaller = Join-Path $installDir "unins000.exe"
+          if (-not (Test-Path $uninstaller)) { throw "Uninstaller executable is missing" }
+          $remove = Start-Process -FilePath $uninstaller -ArgumentList @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART") -Wait -PassThru
+          if ($remove.ExitCode -ne 0) { throw "Uninstall failed: $($remove.ExitCode)" }
+          if (Test-Path $installDir) { throw "Install directory remains after uninstall" }
+          "Install, in-place upgrade and uninstall smoke test passed."
