@@ -123,13 +123,17 @@ The safe retirement point is the worker loop boundary after a complete segment, 
 - Planner tests cover a retirement request during a partially committed segment (it remains pending until the full segment is committed) and retirement after a failed segment is released.
 - At the time this primitive was added, the supervisor did not yet issue target-based retirement requests. The subsequent live integration is documented in the **Live controller integration** section below; it is still experimental pending full race tests and benchmarks.
 
-### Telemetry still required for a live controller
+### Telemetry implementation audit
 
-- Count actual response outcomes at the request boundary, including status 429/503, transport failures, timeouts and Retry-After; supervisor task errors alone miss retries handled inside a worker.
-- Measure request RTT/TTFB per response. `Snapshot.server.rtt` is a connection-open estimate, not a rolling per-request RTT signal, so it must not be misused as congestion telemetry.
-- Sample aggregate received bytes over a monotonic bounded window; exclude windows in which `disk_held` says writes constrained the network.
-- Derive active task count from the supervisor's live-worker registry, not planner ownership alone (a worker may be assigned while retrying).
-- Treat unsupported ranges, known host caps, per-download/global limiters and disk backpressure as hard guardrails before applying any target.
+The live HTTP supervisor now supplies the bounded observations needed by the first Auto-mode controller:
+
+- Aggregate network bytes are sampled from the monotonic receive counter, rather than the UI's committed-byte snapshot.
+- Response-header latency (TTFB), request errors, 429/503 throttling, 5xx responses and 408 timeouts are counted at the HTTP/browser request boundary.
+- The latency queue is bounded; each three-second supervisor window drains its counters and calculates a median.
+- Disk-held state, active download/global limiters, configured/file-size ceilings and the learned host cap are checked before the controller target is applied.
+- Active task count comes from the supervisor's live-worker registry, not planner ownership alone.
+
+Known telemetry limits remain: the latency statistic is a per-download median TTFB, not a per-worker TCP RTT distribution, and FTP transfers do not yet feed the HTTP request metrics. The controller must not interpret TTFB as a TCP RTT.
 
 ### Retirement regression tests
 
