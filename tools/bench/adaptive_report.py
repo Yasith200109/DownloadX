@@ -5,7 +5,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
-from scipy.stats import mannwhitneyu
+from scipy.stats import wilcoxon
 
 BOOT = 20_000
 RNG = np.random.default_rng(20261120)
@@ -63,7 +63,7 @@ def main():
         "Adaptive executable SHA-256: {}".format(manifest["adaptive_sha256"]), "",
         "Ratio is baseline completion time / adaptive completion time; above 1.0 means the adaptive build was faster.",
         "Only successful paired transfers with identical SHA-256 payloads are included in timing statistics.", "",
-        "| Scenario | Valid pairs | Excluded | Baseline median ms | Adaptive median ms | Ratio (95% CI) | Mann–Whitney p |",
+        "| Scenario | Valid pairs | Excluded | Baseline median ms | Adaptive median ms | Ratio (95% CI) | Wilcoxon p |",
         "|---|---:|---:|---:|---:|---:|---:|",
     ]
     output = {"environment": manifest, "scenarios": []}
@@ -75,7 +75,7 @@ def main():
         a = [r["adaptive_ms"] for r in valid]
         ratios = [r["ratio_baseline_over_adaptive"] for r in valid]
         if valid:
-            p = float(mannwhitneyu(b, a, alternative="two-sided").pvalue) if len(valid) >= 2 else None
+            p = float(wilcoxon(b, a, alternative="two-sided").pvalue) if len(valid) >= 2 and any(x != y for x, y in zip(b, a)) else (1.0 if len(valid) >= 2 else None)
             bmed, amed = float(np.median(b)), float(np.median(a))
             ratio_med = float(np.median(ratios))
             ci = paired_ratio_ci(ratios)
