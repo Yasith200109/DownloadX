@@ -146,3 +146,47 @@ used to produce adaptive-vs-baseline claims. The dedicated A/B runner must prese
 matrix, warm-up, alternating order, checksum validation, raw trial records and failure accounting
 specified above. Until that runner and its results exist, benchmark validation remains pending.
 
+### Run the paired Windows A/B harness
+
+The paired runner and analyzer are now implemented:
+
+- `tools/bench/adaptive_ab.py` runs baseline and adaptive executables in alternating order,
+  with a fresh app process and isolated `MDM_DATA_DIR` for every trial.
+- Both builds download the same scenario/run filename, so their SHA-256 values can be compared.
+  The analyzer excludes failed transfers and checksum-mismatched pairs.
+- `tools/bench/adaptive_report.py` reports paired median speed ratios with a bootstrap 95% CI
+  and a paired Wilcoxon signed-rank test. Ratio above 1.0 means adaptive completed faster.
+- The runner records machine details, executable hashes, Git revisions, Rust/Cargo versions and
+  Cargo.lock hashes for both worktrees.
+
+After building both worktrees as above, run from the main checkout in PowerShell:
+
+```powershell
+python tools/bench/adaptive_ab.py `
+  --baseline-exe ..\DownloadX-baseline\target\release\misterdownloadmanager.exe `
+  --adaptive-exe ..\DownloadX-adaptive\target\release\misterdownloadmanager.exe `
+  --labserver-exe ..\DownloadX-baseline\target\release\labserver.exe `
+  --out .study\bench\adaptive-full
+```
+
+The full matrix is intentionally substantial (10 measured pairs per scenario, plus warm-up).
+For a quick harness check, first run only one scenario with two trials:
+
+```powershell
+python tools/bench/adaptive_ab.py `
+  --baseline-exe ..\DownloadX-baseline\target\release\misterdownloadmanager.exe `
+  --adaptive-exe ..\DownloadX-adaptive\target\release\misterdownloadmanager.exe `
+  --labserver-exe ..\DownloadX-baseline\target\release\labserver.exe `
+  --only capped-100m --runs 2 --out .study\bench\adaptive-smoke
+```
+
+Then analyze the resulting directory (NumPy and SciPy are required):
+
+```powershell
+python tools/bench/adaptive_report.py .study\bench\adaptive-smoke
+```
+
+The smoke run validates the harness only; it is not evidence for a speed claim. The full matrix
+and acceptance gates above remain mandatory. Keep the raw `runs.json`, `server.jsonl`,
+`environment.json`, `analysis.json` and `REPORT.md` together as one immutable run artifact.
+
