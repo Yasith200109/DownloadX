@@ -6161,7 +6161,10 @@ mod tests {
         }
         let live = HashSet::from([0, 1, 2, 3]);
 
-        assert_eq!(update_retirement_requests(&mut planner, &live, 2), vec![3, 2]);
+        assert_eq!(
+            update_retirement_requests(&mut planner, &live, 2),
+            vec![3, 2]
+        );
 
         // Requests are cooperative: they become consumable only after a worker releases its
         // current segment. The probe is deliberately never selected.
@@ -6182,7 +6185,10 @@ mod tests {
         }
         let live = HashSet::from([0, 1, 2, 3]);
 
-        assert_eq!(update_retirement_requests(&mut planner, &live, 2), vec![3, 2]);
+        assert_eq!(
+            update_retirement_requests(&mut planner, &live, 2),
+            vec![3, 2]
+        );
         assert!(update_retirement_requests(&mut planner, &live, 4).is_empty());
 
         planner.release(3);
