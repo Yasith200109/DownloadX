@@ -40,6 +40,7 @@ SCENARIOS = [
 ]
 
 kernel32 = ctypes.windll.kernel32
+kernel32.OpenProcess.restype = wt.HANDLE
 psapi = ctypes.windll.psapi
 
 
