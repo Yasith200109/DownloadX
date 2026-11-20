@@ -126,14 +126,15 @@ def calibrate(name: str) -> float:
 def one_trial(label: str, exe: Path, out: Path, dest: Path, server_name: str,
               scenario: tuple, run_index: int, warmup: bool) -> dict:
     sid, _title, size, faults, _count, timeout = scenario
-    name = f"{sid}-{'warmup' if warmup else f'{run_index:02d}'}.bin"
+    trial_tag = "warmup" if warmup else f"{run_index:02d}"
+    name = f"{sid}-{trial_tag}.bin"
     final = dest / name
     for p in (final, dest / (name + ".mdm.part"), dest / (name + ".mdm.json")):
         if p.exists():
             p.unlink()
 
-    trial_tag = "w" if warmup else f"{run_index:02d}"
-    data_dir = out / "client-data" / f"{label.lower()}-{sid}-{trial_tag}"
+    data_tag = "w" if warmup else f"{run_index:02d}"
+    data_dir = out / "client-data" / f"{label.lower()}-{sid}-{data_tag}"
     if data_dir.exists():
         shutil.rmtree(data_dir)
     data_dir.mkdir(parents=True)
