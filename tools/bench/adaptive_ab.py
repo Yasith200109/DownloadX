@@ -125,7 +125,7 @@ def calibrate(name: str) -> float:
 def one_trial(label: str, exe: Path, out: Path, dest: Path, server_name: str,
               scenario: tuple, run_index: int, warmup: bool) -> dict:
     sid, _title, size, faults, _count, timeout = scenario
-    name = f"{sid}-{label.lower()}-{'warmup' if warmup else f'{run_index:02d}'}.bin"
+    name = f"{sid}-{'warmup' if warmup else f'{run_index:02d}'}.bin"
     final = dest / name
     for p in (final, dest / (name + ".mdm.part"), dest / (name + ".mdm.json")):
         if p.exists():
