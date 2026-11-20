@@ -1,0 +1,102 @@
+name: Windows installer
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/windows-installer.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/**"
+      - "tools/installer/**"
+      - "tools/extension/**"
+      - "i18n/**"
+      - "assets/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-installer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build DownloadX Windows x64 installer
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Rust toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: NASM
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $nasm = "C:\Program Files\NASM\nasm.exe"
+          if (-not (Test-Path $nasm)) {
+            $installed = $false
+            foreach ($delay in @(0, 15, 30)) {
+              if ($delay -gt 0) { Start-Sleep -Seconds $delay }
+              choco install nasm --version 2.16.3 --no-progress -y
+              if (Test-Path $nasm) {
+                $installed = $true
+                break
+              }
+            }
+            if (-not $installed) { throw "NASM 2.16.3 could not be installed after retries" }
+          }
+          & $nasm -v
+          "C:\Program Files\NASM" >> $env:GITHUB_PATH
+
+      - name: Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer and portable packages
+        shell: pwsh
+        run: ./tools/installer/build.ps1 -Arch x64
+
+      - name: Verify release artifacts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $dist = Get-ChildItem target/dist -File
+          if (-not ($dist.Name -match 'DownloadX.*setup.*\.exe|MisterDownloadManager.*setup.*\.exe')) {
+            throw "Windows setup executable was not produced"
+          }
+          if (-not ($dist.Name -match 'portable.*\.zip')) {
+            throw "Portable ZIP was not produced"
+          }
+          if (-not (Test-Path target/dist/SHA256SUMS.txt)) {
+            throw "SHA256SUMS.txt was not produced"
+          }
+          Get-ChildItem target/dist -File | ForEach-Object { "$($_.Name) $([math]::Round($_.Length / 1MB, 1)) MB" }
+
+      - name: Install, upgrade and uninstall smoke test
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $setup = Get-ChildItem target/dist -Filter "*-setup.exe" | Select-Object -First 1
+          if (-not $setup) { throw "Setup executable not found" }
+          $installDir = Join-Path $env:RUNNER_TEMP "DownloadXInstallerSmoke"
+          $installArgs = @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-", "/DIR=$installDir", "/TASKS=")
+
+          $first = Start-Process -FilePath $setup.FullName -ArgumentList $installArgs -Wait -PassThru
+          if ($first.ExitCode -ne 0) { throw "First install failed: $($first.ExitCode)" }
+          $app = Join-Path $installDir "misterdownloadmanager.exe"
+          if (-not (Test-Path $app)) { throw "Installed application executable is missing" }
+
+          $upgrade = Start-Process -FilePath $setup.FullName -ArgumentList $installArgs -Wait -PassThru
+          if ($upgrade.ExitCode -ne 0) { throw "In-place upgrade failed: $($upgrade.ExitCode)" }
+          if (-not (Test-Path $app)) { throw "Application missing after in-place upgrade" }
+
+          $uninstaller = Join-Path $installDir "unins000.exe"
+          if (-not (Test-Path $uninstaller)) { throw "Uninstaller executable is missing" }
+          $remove = Start-Process -FilePath $uninstaller -ArgumentList @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART") -Wait -PassThru
+          if ($remove.ExitCode -ne 0) { throw "Uninstall failed: $($remove.ExitCode)" }
+          if (Test-Path $installDir) { throw "Install directory remains after uninstall" }
+          "Install, in-place upgrade and uninstall smoke test passed."

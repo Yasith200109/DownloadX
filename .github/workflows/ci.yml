@@ -101,7 +101,21 @@ jobs:
         if: runner.os == 'Windows' && runner.arch != 'ARM64'
         shell: pwsh
         run: |
-          choco install nasm --version 2.16.3 --no-progress -y
+          $ErrorActionPreference = "Stop"
+          $nasm = "C:\Program Files\NASM\nasm.exe"
+          if (-not (Test-Path $nasm)) {
+            $installed = $false
+            foreach ($delay in @(0, 15, 30)) {
+              if ($delay -gt 0) { Start-Sleep -Seconds $delay }
+              choco install nasm --version 2.16.3 --no-progress -y
+              if (Test-Path $nasm) {
+                $installed = $true
+                break
+              }
+            }
+            if (-not $installed) { throw "NASM 2.16.3 could not be installed after retries" }
+          }
+          & $nasm -v
           "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
       # Windows on ARM: LLVM (clang and libclang) for BoringSSL's and AWS-LC's assembly and
@@ -196,3 +210,14 @@ jobs:
             target/extension/mdm-chromium.zip
             target/extension/mdm-firefox.xpi
             target/extension/mdm-chrome-store.zip
+
+  # The Windows-only adaptive A/B harness and its statistical report must remain syntactically valid.
+  benchmark-tools:
+    name: benchmark tools
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Python syntax
+        run: python3 -m py_compile tools/bench/adaptive_ab.py tools/bench/adaptive_report.py
