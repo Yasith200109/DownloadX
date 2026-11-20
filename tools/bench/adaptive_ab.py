@@ -241,7 +241,8 @@ def main():
                     exe = args.baseline_exe if label == "baseline" else args.adaptive_exe
                     r = one_trial(label, exe, args.out, dest, "labserver", scenario, max(i, 0), i < 0)
                     records.append(r)
-                    print(f"  {'warmup' if i < 0 else i:>7} {label}: "
+                    trial_label = "warmup" if i < 0 else f"{i:02d}"
+                    print(f"  {trial_label:>7} {label}: "
                           f"{r['e2e_ms']} ms; CPU {r['cpu_ms']} ms; "
                           f"WS {r['peak_ws_mb']} MB; {'OK' if r['ok'] else 'FAILED'}", flush=True)
                     (args.out / "runs.json").write_text(json.dumps(records, indent=2), encoding="utf-8")
