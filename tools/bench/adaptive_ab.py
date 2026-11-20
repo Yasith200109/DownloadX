@@ -205,6 +205,21 @@ def one_trial(label: str, exe: Path, out: Path, dest: Path, server_name: str,
             app.wait()
 
 
+def build_metadata(exe: Path) -> dict:
+    root = exe.resolve().parent.parent.parent
+    def command(args):
+        result = subprocess.run(args, cwd=root, capture_output=True, text=True, check=False)
+        return result.stdout.strip() if result.returncode == 0 else None
+    lock = root / "Cargo.lock"
+    return {
+        "root": str(root),
+        "revision": command(["git", "rev-parse", "HEAD"]),
+        "rustc": command(["rustc", "-Vv"]),
+        "cargo": command(["cargo", "-V"]),
+        "cargo_lock_sha256": sha256(lock) if lock.is_file() else None,
+    }
+
+
 def main():
     if os.name != "nt":
         raise SystemExit("This benchmark runner requires Windows.")
@@ -269,6 +284,8 @@ def main():
         "baseline_sha256": sha256(args.baseline_exe),
         "adaptive_sha256": sha256(args.adaptive_exe),
         "labserver_sha256": sha256(args.labserver_exe),
+        "baseline_build": build_metadata(args.baseline_exe),
+        "adaptive_build": build_metadata(args.adaptive_exe),
         "runs_per_scenario": args.runs or "scenario defaults",
         "scenarios": [s[0] for s in scenarios],
         "notes": "Fresh MDM_DATA_DIR and app process per trial; warmups excluded by analysis.",
