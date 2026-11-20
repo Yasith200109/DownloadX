@@ -82,7 +82,7 @@ jobs:
           $ErrorActionPreference = "Stop"
           $setup = Get-ChildItem target/dist -Filter "*-setup.exe" | Select-Object -First 1
           if (-not $setup) { throw "Setup executable not found" }
-          $installDir = Join-Path $env:RUNNER_TEMP "DownloadX Installer Smoke"
+          $installDir = Join-Path $env:RUNNER_TEMP "DownloadXInstallerSmoke"
           $installArgs = @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-", "/DIR=$installDir", "/TASKS=")
 
           $first = Start-Process -FilePath $setup.FullName -ArgumentList $installArgs -Wait -PassThru
