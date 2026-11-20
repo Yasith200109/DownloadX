@@ -1,9 +1,10 @@
 //! DownloadX's deterministic adaptive connection policy.
 //!
-//! This module is intentionally separate from the live download supervisor for the first
-//! rollout. Callers can feed bounded-window measurements into it; the existing planner,
-//! retry logic, host limits and disk backpressure remain authoritative until integration and
-//! benchmark work is complete.
+//! The live HTTP download supervisor feeds this deterministic policy bounded-window
+//! measurements and applies its returned connection target. This module decides only the
+//! target: the planner, retry logic, host limits and disk backpressure remain authoritative.
+//! The live integration is experimental until race coverage and adaptive-vs-baseline
+//! benchmarks are complete.
 
 /// User-selected policy for adaptive HTTP connection counts.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
